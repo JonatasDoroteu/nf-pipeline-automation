@@ -1,0 +1,117 @@
+{
+  "name": "Pipeline - Processamento de Notas Fiscais",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nota-fiscal",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "1",
+      "name": "Webhook - Recebe Documento",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const binary = $input.item.binary.data;\nconst buffer = await $helpers.getBinaryDataBuffer(0, 'data');\nconst base64 = buffer.toString('base64');\n\nconst response = await fetch('http://extraction_service:8000/extract-base64', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({\n    file_base64: base64,\n    mime_type: binary.mimeType,\n    filename: binary.fileName,\n  }),\n});\n\nconst resultado = await response.json();\nreturn [{ json: resultado }];"
+      },
+      "id": "2",
+      "name": "Extrair Dados (IA)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const dados = $input.item.json;\n\nconst response = await fetch('http://extraction_service:8000/validate', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify(dados),\n});\n\nconst resultado = await response.json();\nreturn [{ json: { ...dados, ...resultado } }];"
+      },
+      "id": "3",
+      "name": "Validar Regras de Negocio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            { "value1": "={{ $json.valido }}", "value2": true }
+          ]
+        }
+      },
+      "id": "4",
+      "name": "IF - Nota Valida?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [750, 300]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "notas_fiscais",
+        "columns": "numero_nota,cnpj_emitente,valor_total,data_emissao,status",
+        "additionalFields": {}
+      },
+      "id": "5",
+      "name": "Postgres - Grava Nota Aprovada",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [1000, 200],
+      "credentials": {
+        "postgres": { "id": "1", "name": "Postgres - NF Pipeline" }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "automacao@seudominio.com",
+        "toEmail": "financeiro@seudominio.com",
+        "subject": "Nota fiscal rejeitada - revisão necessária",
+        "text": "=A nota {{ $json.numero_nota }} foi rejeitada.\nMotivo: {{ $json.motivo }}"
+      },
+      "id": "6",
+      "name": "Email - Notifica Rejeicao",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1000, 400],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"status\": \"processado\" } }}"
+      },
+      "id": "7",
+      "name": "Responde Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1250, 300]
+    }
+  ],
+  "connections": {
+    "Webhook - Recebe Documento": {
+      "main": [[{ "node": "Extrair Dados (IA)", "type": "main", "index": 0 }]]
+    },
+    "Extrair Dados (IA)": {
+      "main": [[{ "node": "Validar Regras de Negocio", "type": "main", "index": 0 }]]
+    },
+    "Validar Regras de Negocio": {
+      "main": [[{ "node": "IF - Nota Valida?", "type": "main", "index": 0 }]]
+    },
+    "IF - Nota Valida?": {
+      "main": [
+        [{ "node": "Postgres - Grava Nota Aprovada", "type": "main", "index": 0 }],
+        [{ "node": "Email - Notifica Rejeicao", "type": "main", "index": 0 }]
+      ]
+    },
+    "Postgres - Grava Nota Aprovada": {
+      "main": [[{ "node": "Responde Webhook", "type": "main", "index": 0 }]]
+    },
+    "Email - Notifica Rejeicao": {
+      "main": [[{ "node": "Responde Webhook", "type": "main", "index": 0 }]]
+    }
+  }
+}

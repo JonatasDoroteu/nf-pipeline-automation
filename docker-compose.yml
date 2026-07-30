@@ -1,0 +1,53 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: nf_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nf_user
+      POSTGRES_PASSWORD: nf_password
+      POSTGRES_DB: nf_pipeline
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: nf_n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=admin123
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=nf_pipeline
+      - DB_POSTGRESDB_USER=nf_user
+      - DB_POSTGRESDB_PASSWORD=nf_password
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      - postgres
+
+  extraction_service:
+    build: ./extraction_service
+    container_name: nf_extraction_service
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - DATABASE_URL=postgresql://nf_user:nf_password@postgres:5432/nf_pipeline
+    depends_on:
+      - postgres
+
+volumes:
+  pg_data:
+  n8n_data:
