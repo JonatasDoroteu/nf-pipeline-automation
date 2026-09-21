@@ -7,7 +7,7 @@
   "version": 1,
   "refresh": "30s",
   "time": {
-    "from": "now-30d",
+    "from": "now-365d",
     "to": "now"
   },
   "panels": [
@@ -64,7 +64,7 @@
       "targets": [
         {
           "format": "time_series",
-          "rawSql": "SELECT date_trunc('day', criado_em) AS time, status, COUNT(*) AS total FROM notas_fiscais WHERE criado_em BETWEEN $__timeFrom() AND $__timeTo() GROUP BY 1, 2 ORDER BY 1;",
+          "rawSql": "SELECT date_trunc('day', criado_em) AS time, status, COUNT(*) AS total FROM notas_fiscais GROUP BY 1, 2 ORDER BY 1;",
           "refId": "A"
         }
       ],
@@ -73,18 +73,18 @@
     },
     {
       "id": 5,
-      "type": "barchart",
+      "type": "table",
       "title": "Motivos de rejeicao",
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 5 },
       "targets": [
         {
           "format": "table",
-          "rawSql": "SELECT COALESCE(motivo_rejeicao, 'Sem motivo') AS motivo, COUNT(*) AS total FROM notas_fiscais WHERE status = 'rejeitada' AND criado_em BETWEEN $__timeFrom() AND $__timeTo() GROUP BY 1 ORDER BY total DESC;",
+          "rawSql": "SELECT COALESCE(motivo_rejeicao, 'Sem motivo') AS motivo, COUNT(*) AS total FROM notas_fiscais WHERE status = 'rejeitada' GROUP BY 1 ORDER BY total DESC;",
           "refId": "A"
         }
       ],
       "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
-      "options": { "orientation": "horizontal", "xTickLabelRotation": 0, "legend": { "displayMode": "hidden" } }
+      "options": { "cellHeight": "sm", "footer": { "show": false }, "showHeader": true }
     }
   ],
   "templating": { "list": [] },

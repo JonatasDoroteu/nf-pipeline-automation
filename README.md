@@ -128,7 +128,7 @@ Ou usando a mesma imagem do ambiente:
 docker compose run --rm extraction_service pytest -q
 ```
 
-Resultado validado neste ambiente: **12 testes passaram** (`12 passed`). Também foram validados `docker compose config`, build da imagem do serviço, JSON do workflow, JSON do dashboard, `GET /health` com `200`, consulta de status existente com `200` e consulta inexistente com `404`.
+Resultado validado neste ambiente: **13 testes passaram** (`13 passed`). Também foram validados `docker compose config`, build da imagem do serviço, JSON do workflow, JSON do dashboard, `GET /health` com `200`, consulta de status existente com `200` e consulta inexistente com `404`.
 
 ## Segurança
 

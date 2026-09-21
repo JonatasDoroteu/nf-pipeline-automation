@@ -6,7 +6,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import pytest
 
-from main import DadosNotaFiscal, cnpj_e_valido, dados_para_rejeicao, validar_dados
+from main import (
+    DadosNotaFiscal,
+    cnpj_e_valido,
+    dados_para_rejeicao,
+    normalizar_motivo_rejeicao,
+    validar_dados,
+)
 
 
 def test_cnpj_valido_com_digitos_verificadores():
@@ -116,3 +122,7 @@ def test_fallback_de_rejeicao_gera_numeros_unicos():
     segunda = dados_para_rejeicao(DadosNotaFiscal())
 
     assert primeira.numero_nota != segunda.numero_nota
+
+
+def test_normaliza_motivo_de_rejeicao():
+    assert normalizar_motivo_rejeicao("` Número inválido `") == "Número inválido"

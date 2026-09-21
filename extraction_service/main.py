@@ -260,6 +260,13 @@ def dados_para_rejeicao(dados: DadosNotaFiscal) -> DadosNotaFiscal:
     )
 
 
+def normalizar_motivo_rejeicao(motivo: Optional[str]) -> Optional[str]:
+    """Remove marcadores de markdown e espaços acidentais do motivo persistido."""
+    if motivo is None:
+        return None
+    return motivo.replace("`", "").strip()
+
+
 def gravar_nota_fiscal(
     dados: DadosNotaFiscal,
     status: str,
@@ -284,7 +291,7 @@ def gravar_nota_fiscal(
                     dados.valor_total,
                     dados.data_emissao,
                     status,
-                    motivo,
+                    normalizar_motivo_rejeicao(motivo),
                     json.dumps((dados_brutos or dados).model_dump()),
                 ),
             )
