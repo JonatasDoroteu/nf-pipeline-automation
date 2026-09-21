@@ -1,6 +1,6 @@
 # NF Pipeline Automation
 
-Pipeline de automação para processamento de notas fiscais: recebimento, extração de dados via IA, validação de regras de negócio e persistência em banco — com roteamento automático entre notas aprovadas e rejeitadas.
+Pipeline de automação para processamento de notas fiscais: recebimento, extração de dados via IA, validação de regras de negócio, persistência em banco, consulta de status e monitoramento operacional.
 
 ## Arquitetura
 
@@ -29,7 +29,8 @@ Cada nota rejeitada é gravada no banco (não apenas notificada por e-mail), com
 - **n8n** — orquestração do fluxo
 - **Python / FastAPI** — extração (Gemini) e validação de regras de negócio
 - **PostgreSQL** — persistência de notas aprovadas e rejeitadas
-- **Docker Compose** — sobe os 3 serviços (n8n, Postgres, extraction_service) de uma vez
+- **Grafana** — dashboard provisionado automaticamente com métricas de aprovação, rejeição e motivos
+- **Docker Compose** — sobe os 4 serviços (n8n, Postgres, extraction_service e Grafana) de uma vez
 
 ## Estrutura
 
@@ -42,7 +43,11 @@ nf-pipeline-automation/
 ├── extraction_service/
 │   ├── main.py                 # extração (IA) + validação de regras
 │   ├── requirements.txt
-│   └── Dockerfile
+│   ├── Dockerfile
+│   └── tests/test_main.py      # testes automatizados das regras
+├── grafana/
+│   ├── dashboards/nf-pipeline.json
+│   └── provisioning/           # datasource e dashboard automáticos
 └── n8n/
     └── workflow.json           # fluxo completo pronto pra importar
 ```
@@ -70,6 +75,26 @@ Também é possível testar a extração e validação isoladamente, sem o n8n:
 curl -X POST http://localhost:8000/process -F "file=@caminho/para/nota.png"
 ```
 
+### Consulta de status
+
+Depois que uma nota for processada, consulte o status pelo número da nota:
+
+```bash
+curl http://localhost:8000/notas/12345/status
+```
+
+O endpoint retorna `200` com os dados principais, o status (`aprovada` ou `rejeitada`) e o motivo da rejeição, quando houver. Para uma nota inexistente, retorna `404`. Rejeições também podem ser consultadas pelo número original encontrado pela IA; o identificador `REJEITADA-*` é usado internamente para garantir unicidade no banco.
+
+### Dashboard Grafana
+
+Acesse `http://localhost:3000` após subir o Compose. O login inicial é `admin` / `admin123`. O dashboard **NF Pipeline - Operacao** é criado automaticamente e apresenta:
+
+- total de notas processadas;
+- total de notas aprovadas;
+- total de notas rejeitadas;
+- processamento por dia;
+- ranking dos motivos de rejeição.
+
 ## Regras de negócio implementadas
 
 Em `extraction_service/main.py`, função `validar_dados`:
@@ -79,12 +104,32 @@ Em `extraction_service/main.py`, função `validar_dados`:
 - Data de emissão no futuro
 - Nota duplicada — consulta ao Postgres (`nota_ja_existe`)
 
-## Testado
+## Testes automatizados
 
-Fluxo validado ponta a ponta com nota fiscal válida (caminho aprovada) e com documento inválido (caminho rejeitada), incluindo tratamento de valores nulos e constraint de unicidade no banco.
+Os testes ficam em `extraction_service/tests/test_main.py` e cobrem:
 
-## Próximos passos
+- validação real de CNPJ, incluindo dígitos verificadores;
+- rejeição de número ausente, CNPJ inválido, valor inválido e data inválida;
+- data futura;
+- nota duplicada;
+- aprovação de nota válida;
+- fallback de rejeição com campos obrigatórios e número único.
 
-- Endpoint de consulta de status por número de nota
-- Dashboard (Grafana) com métricas de aprovação/rejeição
-- Testes automatizados para `validar_dados`
+Para executar localmente com as dependências instaladas:
+
+```bash
+cd extraction_service
+pytest -q
+```
+
+Ou usando a mesma imagem do ambiente:
+
+```bash
+docker compose run --rm extraction_service pytest -q
+```
+
+Resultado validado neste ambiente: **12 testes passaram** (`12 passed`). Também foram validados `docker compose config`, build da imagem do serviço, JSON do workflow, JSON do dashboard, `GET /health` com `200`, consulta de status existente com `200` e consulta inexistente com `404`.
+
+## Segurança
+
+O arquivo `.env` contém a chave do Gemini e é ignorado pelo Git. O `.gitignore` bloqueia `.env` e variantes como `.env.local` e `.env.production`, liberando apenas `.env.example`, que contém somente um placeholder. Nunca coloque chaves reais no README, no workflow ou em arquivos versionados.

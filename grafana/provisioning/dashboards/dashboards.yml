@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: NF Pipeline dashboards
+    orgId: 1
+    folder: NF Pipeline
+    type: file
+    disableDeletion: true
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards

@@ -67,17 +67,30 @@
     },
     {
       "parameters": {
-        "fromEmail": "automacao@seudominio.com",
-        "toEmail": "financeiro@seudominio.com",
-        "subject": "Nota fiscal rejeitada - revisão necessária",
-        "text": "=A nota {{ $json.numero_nota }} foi rejeitada.\nMotivo: {{ $json.motivo }}"
+        "jsCode": "const dados = $input.item.json;\nconst executionId = $execution.id || `${Date.now()}-${Math.random().toString(16).slice(2)}`;\nconst cnpj = dados.cnpj_emitente && dados.cnpj_emitente.length <= 18\n  ? dados.cnpj_emitente\n  : '00.000.000/0000-00';\nconst dataEmissao = /^\\d{4}-\\d{2}-\\d{2}$/.test(dados.data_emissao || '')\n  ? dados.data_emissao\n  : '1900-01-01';\nconst valorTotal = typeof dados.valor_total === 'number' && dados.valor_total > 0\n  ? dados.valor_total\n  : 0.01;\n\nreturn [{\n  json: {\n    ...dados,\n    numero_nota: `REJEITADA-${executionId}`,\n    cnpj_emitente: cnpj,\n    valor_total: valorTotal,\n    data_emissao: dataEmissao,\n    status: 'rejeitada',\n    motivo_rejeicao: dados.motivo || 'Dados inválidos',\n    dados_brutos_extraidos: JSON.stringify(dados),\n  },\n}];"
       },
       "id": "6",
-      "name": "Email - Notifica Rejeicao",
-      "type": "n8n-nodes-base.emailSend",
+      "name": "Preparar Nota Rejeitada",
+      "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1000, 400],
-      "disabled": true
+      "position": [1000, 400]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "notas_fiscais",
+        "columns": "numero_nota,cnpj_emitente,valor_total,data_emissao,status,motivo_rejeicao,dados_brutos_extraidos",
+        "additionalFields": {}
+      },
+      "id": "8",
+      "name": "Postgres - Grava Nota Rejeitada",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [1250, 400],
+      "credentials": {
+        "postgres": { "id": "1", "name": "Postgres - NF Pipeline" }
+      }
     },
     {
       "parameters": {
@@ -88,7 +101,7 @@
       "name": "Responde Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1250, 300]
+      "position": [1500, 300]
     }
   ],
   "connections": {
@@ -104,13 +117,16 @@
     "IF - Nota Valida?": {
       "main": [
         [{ "node": "Postgres - Grava Nota Aprovada", "type": "main", "index": 0 }],
-        [{ "node": "Email - Notifica Rejeicao", "type": "main", "index": 0 }]
+        [{ "node": "Preparar Nota Rejeitada", "type": "main", "index": 0 }]
       ]
     },
     "Postgres - Grava Nota Aprovada": {
       "main": [[{ "node": "Responde Webhook", "type": "main", "index": 0 }]]
     },
-    "Email - Notifica Rejeicao": {
+    "Preparar Nota Rejeitada": {
+      "main": [[{ "node": "Postgres - Grava Nota Rejeitada", "type": "main", "index": 0 }]]
+    },
+    "Postgres - Grava Nota Rejeitada": {
       "main": [[{ "node": "Responde Webhook", "type": "main", "index": 0 }]]
     }
   }

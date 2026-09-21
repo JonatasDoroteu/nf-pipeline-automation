@@ -1,0 +1,17 @@
+apiVersion: 1
+
+datasources:
+  - name: NF Pipeline Postgres
+    type: postgres
+    access: proxy
+    url: postgres:5432
+    user: nf_user
+    secureJsonData:
+      password: nf_password
+    jsonData:
+      database: nf_pipeline
+      sslmode: disable
+      postgresVersion: 1600
+      timescaledb: false
+    isDefault: true
+    uid: nf-postgres

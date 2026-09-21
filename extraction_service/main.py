@@ -20,7 +20,8 @@ agendada, e não precisa lidar com o arquivo binário da nota fiscal.
 import os
 import re
 import json
-from datetime import date
+import uuid
+from datetime import date, datetime
 from typing import Optional
 
 import psycopg2
@@ -188,11 +189,83 @@ def health():
     return {"status": "ok"}
 
 
+class StatusNotaFiscal(BaseModel):
+    id: int
+    numero_nota: str
+    cnpj_emitente: str
+    valor_total: float
+    data_emissao: date
+    status: str
+    motivo_rejeicao: Optional[str] = None
+    criado_em: datetime
+
+
+@app.get("/notas/{numero_nota}/status", response_model=StatusNotaFiscal)
+def consultar_status(numero_nota: str):
+    """Consulta o status e os dados principais de uma nota processada."""
+    conn = psycopg2.connect(DATABASE_URL)
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, numero_nota, cnpj_emitente, valor_total,
+                       data_emissao, status, motivo_rejeicao, criado_em
+                FROM notas_fiscais
+                     WHERE numero_nota = %s
+                         OR dados_brutos_extraidos->>'numero_nota' = %s
+                ORDER BY id DESC
+                LIMIT 1
+                """,
+                (numero_nota, numero_nota),
+            )
+            registro = cur.fetchone()
+    finally:
+        conn.close()
+
+    if registro is None:
+        raise HTTPException(404, "Nota fiscal não encontrada")
+
+    return StatusNotaFiscal(
+        id=registro[0],
+        numero_nota=registro[1],
+        cnpj_emitente=registro[2],
+        valor_total=registro[3],
+        data_emissao=registro[4],
+        status=registro[5],
+        motivo_rejeicao=registro[6],
+        criado_em=registro[7],
+    )
+
+
 # ---------------------------------------------------------------------------
 # Etapa 3: Gravação no banco
 # ---------------------------------------------------------------------------
 
-def gravar_nota_fiscal(dados: DadosNotaFiscal, status: str, motivo: Optional[str] = None) -> int:
+def dados_para_rejeicao(dados: DadosNotaFiscal) -> DadosNotaFiscal:
+    """Preenche os campos obrigatórios sem perder os dados originais extraídos."""
+    try:
+        data_emissao = date.fromisoformat(dados.data_emissao).isoformat()
+    except (ValueError, TypeError):
+        data_emissao = "1900-01-01"
+
+    cnpj = dados.cnpj_emitente or "00.000.000/0000-00"
+    if len(cnpj) > 18:
+        cnpj = "00.000.000/0000-00"
+
+    return DadosNotaFiscal(
+        numero_nota=f"REJEITADA-{uuid.uuid4().hex}",
+        cnpj_emitente=cnpj,
+        valor_total=dados.valor_total if dados.valor_total is not None else 0.01,
+        data_emissao=data_emissao,
+    )
+
+
+def gravar_nota_fiscal(
+    dados: DadosNotaFiscal,
+    status: str,
+    motivo: Optional[str] = None,
+    dados_brutos: Optional[DadosNotaFiscal] = None,
+) -> int:
     """Grava a nota fiscal (aprovada ou rejeitada) e retorna o id gerado."""
     conn = psycopg2.connect(DATABASE_URL)
     try:
@@ -212,7 +285,7 @@ def gravar_nota_fiscal(dados: DadosNotaFiscal, status: str, motivo: Optional[str
                     dados.data_emissao,
                     status,
                     motivo,
-                    json.dumps(dados.model_dump()),
+                    json.dumps((dados_brutos or dados).model_dump()),
                 ),
             )
             resultado = cur.fetchone()
@@ -265,7 +338,13 @@ async def processar_documento(file: UploadFile = File(...)):
 
     if not resultado_validacao.valido:
         registrar_log(None, "validacao", "erro", resultado_validacao.motivo)
-        nota_id = gravar_nota_fiscal(dados, status="rejeitada", motivo=resultado_validacao.motivo)
+        dados_rejeicao = dados_para_rejeicao(dados)
+        nota_id = gravar_nota_fiscal(
+            dados_rejeicao,
+            status="rejeitada",
+            motivo=resultado_validacao.motivo,
+            dados_brutos=dados,
+        )
         return ResultadoProcessamento(
             status="rejeitada",
             dados_extraidos=dados,
