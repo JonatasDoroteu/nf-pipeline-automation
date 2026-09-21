@@ -12,6 +12,7 @@ from main import (
     cnpj_e_valido,
     dados_para_rejeicao,
     normalizar_motivo_rejeicao,
+    enforce_rate_limit,
     validar_dados,
     require_api_key,
 )
@@ -143,3 +144,28 @@ def test_api_key_valida_e_aceita(monkeypatch):
     monkeypatch.setattr("main.API_AUTH_TOKEN", "token-de-teste")
 
     assert require_api_key("token-de-teste") == "token-de-teste"
+
+
+def test_rate_limit_bloqueia_excesso_de_chamadas(monkeypatch):
+    monkeypatch.setattr("main.RATE_LIMIT_REQUESTS", 2)
+    monkeypatch.setattr("main.RATE_LIMIT_WINDOW_SECONDS", 60)
+    monkeypatch.setattr("main._rate_limit_requests", {})
+
+    enforce_rate_limit("token-de-teste")
+    enforce_rate_limit("token-de-teste")
+
+    with pytest.raises(HTTPException) as erro:
+        enforce_rate_limit("token-de-teste")
+
+    assert erro.value.status_code == 429
+    assert erro.value.headers["Retry-After"]
+    assert erro.value.headers["X-RateLimit-Remaining"] == "0"
+
+
+def test_rate_limit_e_separado_por_api_key(monkeypatch):
+    monkeypatch.setattr("main.RATE_LIMIT_REQUESTS", 1)
+    monkeypatch.setattr("main.RATE_LIMIT_WINDOW_SECONDS", 60)
+    monkeypatch.setattr("main._rate_limit_requests", {})
+
+    enforce_rate_limit("primeiro-token")
+    enforce_rate_limit("segundo-token")

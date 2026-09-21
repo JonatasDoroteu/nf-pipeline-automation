@@ -95,6 +95,10 @@ curl -X POST http://localhost:8000/process -H "X-API-Key: SEU_API_AUTH_TOKEN" -F
 
 Os endpoints de negócio (`/extract`, `/extract-base64`, `/validate`, `/process` e `/notas/{numero_nota}/status`) exigem o header `X-API-Key`. O token é carregado por variável de ambiente e não fica salvo no código, no workflow ou no README. O endpoint `/health` permanece público para probes de disponibilidade.
 
+Os endpoints que podem chamar o Gemini (`/extract`, `/extract-base64` e `/process`) também possuem rate limiting por API key. O padrão é **10 chamadas a cada 60 segundos**; ao exceder o limite, a API responde `429 Too Many Requests` com o header `Retry-After`. Ajuste `RATE_LIMIT_REQUESTS` e `RATE_LIMIT_WINDOW_SECONDS` no `.env` conforme sua cota.
+
+O contador é thread-safe e fica em memória no container do FastAPI, adequado para esta implantação com um serviço. Em uma implantação com múltiplas réplicas, use um armazenamento compartilhado como Redis ou um rate limiter no proxy para manter um limite global.
+
 Na interface web, informe o mesmo token no campo **API key**. Ele fica somente no `sessionStorage` da aba e é enviado automaticamente nas ações de upload e consulta.
 
 O workflow do n8n recebe `API_AUTH_TOKEN` pelo Compose e repassa a chave nos nós que chamam o FastAPI. Ao importar o workflow em outra instalação, configure essa variável no ambiente do n8n.
@@ -170,7 +174,7 @@ Ou usando a mesma imagem do ambiente:
 docker compose run --rm extraction_service pytest -q
 ```
 
-Resultado validado neste ambiente: **15 testes passaram** (`15 passed`). Também foram validados `docker compose config`, build da imagem do serviço, JSON do workflow, JSON do dashboard, `GET /health` com `200`, consulta de status existente com `200`, consulta inexistente com `404` e rejeição de chamadas protegidas sem API key.
+Resultado validado neste ambiente: **17 testes passaram** (`17 passed`). Também foram validados `docker compose config`, build da imagem do serviço, JSON do workflow, JSON do dashboard, `GET /health` com `200`, consulta de status existente com `200`, consulta inexistente com `404`, rejeição de chamadas protegidas sem API key e rate limiting com resposta `429`.
 
 ## CI/CD com GitHub Actions
 

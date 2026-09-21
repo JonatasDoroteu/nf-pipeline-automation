@@ -45,6 +45,8 @@ services:
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - API_AUTH_TOKEN=${API_AUTH_TOKEN:?Configure API_AUTH_TOKEN in .env}
+      - RATE_LIMIT_REQUESTS=${RATE_LIMIT_REQUESTS:-10}
+      - RATE_LIMIT_WINDOW_SECONDS=${RATE_LIMIT_WINDOW_SECONDS:-60}
       - DATABASE_URL=postgresql://nf_user:nf_password@postgres:5432/nf_pipeline
     depends_on:
       - postgres

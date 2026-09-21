@@ -20,6 +20,8 @@ agendada, e não precisa lidar com o arquivo binário da nota fiscal.
 import os
 import re
 import json
+import threading
+import time
 import uuid
 from datetime import date, datetime
 from typing import Optional
@@ -37,6 +39,10 @@ app.mount("/static", StaticFiles(directory="frontend"), name="static")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 DATABASE_URL = os.getenv("DATABASE_URL")
 API_AUTH_TOKEN = os.getenv("API_AUTH_TOKEN")
+RATE_LIMIT_REQUESTS = int(os.getenv("RATE_LIMIT_REQUESTS", "10"))
+RATE_LIMIT_WINDOW_SECONDS = int(os.getenv("RATE_LIMIT_WINDOW_SECONDS", "60"))
+_rate_limit_lock = threading.Lock()
+_rate_limit_requests: dict[str, list[float]] = {}
 
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
@@ -52,6 +58,31 @@ def require_api_key(api_key: Optional[str] = Header(default=None, alias="X-API-K
         raise HTTPException(500, "API_AUTH_TOKEN não configurado")
     if api_key != API_AUTH_TOKEN:
         raise HTTPException(401, "API key inválida ou ausente")
+    return api_key
+
+
+def enforce_rate_limit(api_key: str = Depends(require_api_key)):
+    """Limita chamadas que podem consumir cota da API de IA por API key."""
+    now = time.monotonic()
+    window_start = now - RATE_LIMIT_WINDOW_SECONDS
+
+    with _rate_limit_lock:
+        timestamps = [timestamp for timestamp in _rate_limit_requests.get(api_key, []) if timestamp > window_start]
+        if len(timestamps) >= RATE_LIMIT_REQUESTS:
+            retry_after = max(1, int(timestamps[0] + RATE_LIMIT_WINDOW_SECONDS - now))
+            raise HTTPException(
+                status_code=429,
+                detail="Limite de chamadas de extração excedido. Tente novamente mais tarde.",
+                headers={
+                    "Retry-After": str(retry_after),
+                    "X-RateLimit-Limit": str(RATE_LIMIT_REQUESTS),
+                    "X-RateLimit-Remaining": "0",
+                },
+            )
+
+        timestamps.append(now)
+        _rate_limit_requests[api_key] = timestamps
+
     return api_key
 
 
@@ -91,7 +122,7 @@ Se não conseguir identificar algum campo com certeza, use null nesse campo.
 """
 
 
-@app.post("/extract", response_model=DadosNotaFiscal, dependencies=[Depends(require_api_key)])
+@app.post("/extract", response_model=DadosNotaFiscal, dependencies=[Depends(enforce_rate_limit)])
 async def extrair_dados(file: UploadFile = File(...)):
     conteudo = await file.read()
     return await _extrair_dados_dos_bytes(conteudo, file.content_type)
@@ -103,7 +134,7 @@ class ArquivoBase64(BaseModel):
     filename: Optional[str] = None
 
 
-@app.post("/extract-base64", response_model=DadosNotaFiscal, dependencies=[Depends(require_api_key)])
+@app.post("/extract-base64", response_model=DadosNotaFiscal, dependencies=[Depends(enforce_rate_limit)])
 async def extrair_dados_base64(arquivo: ArquivoBase64):
     """
     Igual ao /extract, mas recebe o arquivo como texto (base64) dentro de um
@@ -347,7 +378,7 @@ class ResultadoProcessamento(BaseModel):
     nota_fiscal_id: Optional[int] = None
 
 
-@app.post("/process", response_model=ResultadoProcessamento, dependencies=[Depends(require_api_key)])
+@app.post("/process", response_model=ResultadoProcessamento, dependencies=[Depends(enforce_rate_limit)])
 async def processar_documento(file: UploadFile = File(...)):
     # 1. Extração
     try:
