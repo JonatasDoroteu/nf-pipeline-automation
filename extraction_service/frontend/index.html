@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NF Pipeline | Processamento</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="NF Pipeline início">
+        <span class="brand-mark">NF</span>
+        <span>Pipeline</span>
+      </a>
+      <div class="topbar-meta"><span class="pulse"></span> API online <span class="divider"></span> FastAPI + Gemini</div>
+    </header>
+
+    <main>
+      <section class="intro">
+        <div>
+          <p class="eyebrow">PROCESSAMENTO DE DOCUMENTOS</p>
+          <h1>Da nota fiscal ao<br><em>status validado.</em></h1>
+          <p class="lede">Envie um documento e acompanhe extração, validação e persistência em um único fluxo.</p>
+        </div>
+        <div class="intro-index">01<span>/</span>04</div>
+      </section>
+
+      <section class="workspace">
+        <div class="process-card">
+          <div class="card-heading">
+            <div><span class="section-number">01</span><h2>Enviar documento</h2></div>
+            <span class="file-types">PDF · PNG · JPG</span>
+          </div>
+          <form id="upload-form">
+            <label class="dropzone" id="dropzone" for="file-input">
+              <input id="file-input" type="file" name="file" accept="application/pdf,image/png,image/jpeg,image/webp" required>
+              <span class="upload-icon">↑</span>
+              <strong id="file-label">Arraste sua nota aqui</strong>
+              <span id="file-hint">ou clique para procurar um arquivo</span>
+            </label>
+            <button class="primary-button" type="submit" id="submit-button"><span>Processar nota</span><b>↗</b></button>
+          </form>
+          <div class="pipeline" aria-label="Etapas do processamento">
+            <div class="pipeline-step" data-step="extract"><span>01</span>Extração IA</div>
+            <i></i><div class="pipeline-step" data-step="validate"><span>02</span>Validação</div>
+            <i></i><div class="pipeline-step" data-step="save"><span>03</span>Persistência</div>
+          </div>
+        </div>
+
+        <aside class="result-card" id="result-card">
+          <div class="card-heading">
+            <div><span class="section-number">02</span><h2>Resultado</h2></div>
+            <span class="status-badge idle" id="status-badge">Aguardando</span>
+          </div>
+          <div class="result-empty" id="result-empty">
+            <div class="empty-symbol">◌</div>
+            <p>O resultado do processamento<br>aparecerá aqui.</p>
+          </div>
+          <div class="result-content hidden" id="result-content">
+            <div class="result-summary"><span id="result-title">Nota processada</span><strong id="result-status"></strong></div>
+            <p class="reason" id="result-reason"></p>
+            <dl class="data-grid">
+              <div><dt>Número da nota</dt><dd id="data-number">—</dd></div>
+              <div><dt>CNPJ emitente</dt><dd id="data-cnpj">—</dd></div>
+              <div><dt>Valor total</dt><dd id="data-value">—</dd></div>
+              <div><dt>Emissão</dt><dd id="data-date">—</dd></div>
+            </dl>
+            <button class="secondary-button" id="new-process" type="button">Processar outra nota <span>↗</span></button>
+          </div>
+        </aside>
+      </section>
+
+      <section class="lookup-section">
+        <div><p class="eyebrow">RASTREABILIDADE</p><h2>Consultar status</h2><p>Busque uma nota já processada pelo número identificado.</p></div>
+        <form class="lookup-form" id="lookup-form"><label for="lookup-number">Número da nota</label><div><input id="lookup-number" placeholder="Ex.: 12345" required><button type="submit">Consultar <span>↗</span></button></div></form>
+        <div class="lookup-result hidden" id="lookup-result"></div>
+      </section>
+    </main>
+    <footer><span>NF PIPELINE AUTOMATION</span><span>n8n · FastAPI · PostgreSQL · Grafana</span></footer>
+  </div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

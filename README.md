@@ -2,6 +2,8 @@
 
 Pipeline de automação para processamento de notas fiscais: recebimento, extração de dados via IA, validação de regras de negócio, persistência em banco, consulta de status e monitoramento operacional.
 
+O projeto também inclui uma interface web em `http://localhost:8000` para demonstrar o pipeline sem depender de comandos: basta enviar uma nota fiscal, acompanhar as etapas e consultar o status de uma nota processada.
+
 ## Arquitetura
 
 O **n8n** orquestra o fluxo do início ao fim. O serviço em **Python (FastAPI)** entra como microsserviço de apoio, chamado via HTTP, responsável por duas coisas isoladas de propósito:
@@ -28,6 +30,7 @@ Cada nota rejeitada é gravada no banco (não apenas notificada por e-mail), com
 
 - **n8n** — orquestração do fluxo
 - **Python / FastAPI** — extração (Gemini) e validação de regras de negócio
+- **Interface web** — upload de nota, acompanhamento das etapas e consulta de status
 - **PostgreSQL** — persistência de notas aprovadas e rejeitadas
 - **Grafana** — dashboard provisionado automaticamente com métricas de aprovação, rejeição e motivos
 - **Docker Compose** — sobe os 4 serviços (n8n, Postgres, extraction_service e Grafana) de uma vez
@@ -42,6 +45,7 @@ nf-pipeline-automation/
 │   └── init.sql                # cria as tabelas automaticamente
 ├── extraction_service/
 │   ├── main.py                 # extração (IA) + validação de regras
+│   ├── frontend/               # tela web de upload e status
 │   ├── requirements.txt
 │   ├── Dockerfile
 │   └── tests/test_main.py      # testes automatizados das regras
@@ -52,6 +56,14 @@ nf-pipeline-automation/
     └── workflow.json           # fluxo completo pronto pra importar
 ```
 
+## Interface de demonstração
+
+A interface web coloca o pipeline em primeiro plano para quem está conhecendo o projeto: o visitante pode enviar uma nota fiscal, acompanhar as etapas de extração, validação e persistência e consultar o status de uma nota já processada, sem precisar começar pelo terminal.
+
+![Interface web do NF Pipeline](docs/nf-pipeline-interface.png)
+
+Ela é servida pelo próprio FastAPI em `http://localhost:8000`, reaproveitando o endpoint `/process` do fluxo principal.
+
 ## Como rodar
 
 1. Gere uma chave gratuita da API do Gemini em https://aistudio.google.com/app/apikey
@@ -60,12 +72,13 @@ nf-pipeline-automation/
    ```bash
    docker compose up -d --build
    ```
-4. Acesse `http://localhost:5678`, importe `n8n/workflow.json` e configure a credencial do Postgres (host `postgres`, database `nf_pipeline`, user `nf_user`)
-5. Publique o workflow e teste:
+4. Abra `http://localhost:8000` para usar a interface web de upload e acompanhar o processamento. A captura acima mostra a tela inicial do projeto.
+5. Acesse `http://localhost:5678`, importe `n8n/workflow.json` e configure a credencial do Postgres (host `postgres`, database `nf_pipeline`, user `nf_user`)
+6. Publique o workflow e teste:
    ```bash
    curl -X POST http://localhost:5678/webhook/nota-fiscal -F "data=@caminho/para/nota.png"
    ```
-6. Confira o resultado direto no banco:
+7. Confira o resultado direto no banco:
    ```bash
    docker compose exec postgres psql -U nf_user -d nf_pipeline -c "SELECT * FROM notas_fiscais ORDER BY id DESC;"
    ```
@@ -74,6 +87,18 @@ Também é possível testar a extração e validação isoladamente, sem o n8n:
 ```bash
 curl -X POST http://localhost:8000/process -F "file=@caminho/para/nota.png"
 ```
+
+### Interface web
+
+A tela inicial é servida pelo próprio FastAPI e oferece:
+
+- upload por clique ou arrastar e soltar de PDF e imagens;
+- indicação visual das etapas de extração, validação e persistência;
+- resultado com status, número, CNPJ, valor e data extraídos;
+- feedback de erro ou rejeição com o motivo da regra de negócio;
+- consulta de status por número da nota.
+
+Ela usa o endpoint `/process` existente, portanto a demonstração visual percorre exatamente o mesmo pipeline do backend.
 
 ### Consulta de status
 

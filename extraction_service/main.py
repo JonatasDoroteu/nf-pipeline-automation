@@ -27,15 +27,23 @@ from typing import Optional
 import psycopg2
 import google.generativeai as genai
 from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 app = FastAPI(title="Serviço de Extração e Validação de Notas Fiscais")
+app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
+
+
+@app.get("/", include_in_schema=False)
+def interface_web():
+    return FileResponse("frontend/index.html")
 
 
 # ---------------------------------------------------------------------------
