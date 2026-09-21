@@ -23,6 +23,8 @@ services:
       - N8N_BASIC_AUTH_ACTIVE=true
       - N8N_BASIC_AUTH_USER=admin
       - N8N_BASIC_AUTH_PASSWORD=admin123
+      - API_AUTH_TOKEN=${API_AUTH_TOKEN:?Configure API_AUTH_TOKEN in .env}
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
       - DB_TYPE=postgresdb
       - DB_POSTGRESDB_HOST=postgres
       - DB_POSTGRESDB_PORT=5432
@@ -42,6 +44,7 @@ services:
       - "8000:8000"
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - API_AUTH_TOKEN=${API_AUTH_TOKEN:?Configure API_AUTH_TOKEN in .env}
       - DATABASE_URL=postgresql://nf_user:nf_password@postgres:5432/nf_pipeline
     depends_on:
       - postgres

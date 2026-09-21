@@ -10,6 +10,15 @@ const statusBadge = document.querySelector('#status-badge');
 const resultStatus = document.querySelector('#result-status');
 const resultReason = document.querySelector('#result-reason');
 const steps = [...document.querySelectorAll('.pipeline-step')];
+const apiKeyInput = document.querySelector('#api-key');
+apiKeyInput.value = sessionStorage.getItem('nf-api-key') || '';
+apiKeyInput.addEventListener('input', () => sessionStorage.setItem('nf-api-key', apiKeyInput.value));
+
+const apiFetch = (url, options = {}) => {
+  const headers = new Headers(options.headers || {});
+  headers.set('X-API-Key', apiKeyInput.value.trim());
+  return fetch(url, { ...options, headers });
+};
 
 const setStep = (current) => {
   const order = ['extract', 'validate', 'save'];
@@ -64,7 +73,7 @@ form.addEventListener('submit', async (event) => {
   const body = new FormData(); body.append('file', input.files[0]);
   try {
     setTimeout(() => setStep(1), 600);
-    const response = await fetch('/process', { method: 'POST', body });
+    const response = await apiFetch('/process', { method: 'POST', body });
     const result = await response.json();
     if (!response.ok) throw new Error(result.detail || 'Falha no processamento');
     setStep(result.status === 'erro' ? 2 : 3);
@@ -88,7 +97,7 @@ document.querySelector('#lookup-form').addEventListener('submit', async (event) 
   const target = document.querySelector('#lookup-result');
   target.classList.remove('hidden'); target.innerHTML = '<p>Consultando...</p>';
   try {
-    const response = await fetch(`/notas/${encodeURIComponent(number)}/status`);
+    const response = await apiFetch(`/notas/${encodeURIComponent(number)}/status`);
     const result = await response.json();
     if (!response.ok) throw new Error(result.detail || 'Nota não encontrada');
     target.innerHTML = `<strong>${result.status === 'aprovada' ? 'Aprovada' : 'Rejeitada'}</strong><p>Nota ${result.numero_nota} · ${result.motivo_rejeicao || 'Sem ressalvas'}</p>`;

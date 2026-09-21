@@ -26,7 +26,7 @@ from typing import Optional
 
 import psycopg2
 import google.generativeai as genai
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import Depends, FastAPI, Header, UploadFile, File, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -36,6 +36,7 @@ app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 DATABASE_URL = os.getenv("DATABASE_URL")
+API_AUTH_TOKEN = os.getenv("API_AUTH_TOKEN")
 
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
@@ -44,6 +45,14 @@ if GEMINI_API_KEY:
 @app.get("/", include_in_schema=False)
 def interface_web():
     return FileResponse("frontend/index.html")
+
+
+def require_api_key(api_key: Optional[str] = Header(default=None, alias="X-API-Key")):
+    if not API_AUTH_TOKEN:
+        raise HTTPException(500, "API_AUTH_TOKEN não configurado")
+    if api_key != API_AUTH_TOKEN:
+        raise HTTPException(401, "API key inválida ou ausente")
+    return api_key
 
 
 # ---------------------------------------------------------------------------
@@ -82,7 +91,7 @@ Se não conseguir identificar algum campo com certeza, use null nesse campo.
 """
 
 
-@app.post("/extract", response_model=DadosNotaFiscal)
+@app.post("/extract", response_model=DadosNotaFiscal, dependencies=[Depends(require_api_key)])
 async def extrair_dados(file: UploadFile = File(...)):
     conteudo = await file.read()
     return await _extrair_dados_dos_bytes(conteudo, file.content_type)
@@ -94,7 +103,7 @@ class ArquivoBase64(BaseModel):
     filename: Optional[str] = None
 
 
-@app.post("/extract-base64", response_model=DadosNotaFiscal)
+@app.post("/extract-base64", response_model=DadosNotaFiscal, dependencies=[Depends(require_api_key)])
 async def extrair_dados_base64(arquivo: ArquivoBase64):
     """
     Igual ao /extract, mas recebe o arquivo como texto (base64) dentro de um
@@ -167,7 +176,7 @@ def nota_ja_existe(numero_nota: str, cnpj: str) -> bool:
         conn.close()
 
 
-@app.post("/validate", response_model=ResultadoValidacao)
+@app.post("/validate", response_model=ResultadoValidacao, dependencies=[Depends(require_api_key)])
 def validar_dados(dados: DadosNotaFiscal):
     if not dados.numero_nota:
         return ResultadoValidacao(valido=False, motivo="Número da nota não identificado")
@@ -208,7 +217,7 @@ class StatusNotaFiscal(BaseModel):
     criado_em: datetime
 
 
-@app.get("/notas/{numero_nota}/status", response_model=StatusNotaFiscal)
+@app.get("/notas/{numero_nota}/status", response_model=StatusNotaFiscal, dependencies=[Depends(require_api_key)])
 def consultar_status(numero_nota: str):
     """Consulta o status e os dados principais de uma nota processada."""
     conn = psycopg2.connect(DATABASE_URL)
@@ -338,7 +347,7 @@ class ResultadoProcessamento(BaseModel):
     nota_fiscal_id: Optional[int] = None
 
 
-@app.post("/process", response_model=ResultadoProcessamento)
+@app.post("/process", response_model=ResultadoProcessamento, dependencies=[Depends(require_api_key)])
 async def processar_documento(file: UploadFile = File(...)):
     # 1. Extração
     try:

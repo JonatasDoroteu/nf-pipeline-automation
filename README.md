@@ -67,7 +67,10 @@ Ela é servida pelo próprio FastAPI em `http://localhost:8000`, reaproveitando 
 ## Como rodar
 
 1. Gere uma chave gratuita da API do Gemini em https://aistudio.google.com/app/apikey
-2. Copie `.env.example` para `.env` e cole a chave
+2. Copie `.env.example` para `.env`, cole a chave do Gemini e substitua `API_AUTH_TOKEN` por um token forte. Gere um token com:
+   ```bash
+   python -c "import secrets; print(secrets.token_urlsafe(32))"
+   ```
 3. Suba os containers:
    ```bash
    docker compose up -d --build
@@ -85,8 +88,16 @@ Ela é servida pelo próprio FastAPI em `http://localhost:8000`, reaproveitando 
 
 Também é possível testar a extração e validação isoladamente, sem o n8n:
 ```bash
-curl -X POST http://localhost:8000/process -F "file=@caminho/para/nota.png"
+curl -X POST http://localhost:8000/process -H "X-API-Key: SEU_API_AUTH_TOKEN" -F "file=@caminho/para/nota.png"
 ```
+
+### Autenticação da API
+
+Os endpoints de negócio (`/extract`, `/extract-base64`, `/validate`, `/process` e `/notas/{numero_nota}/status`) exigem o header `X-API-Key`. O token é carregado por variável de ambiente e não fica salvo no código, no workflow ou no README. O endpoint `/health` permanece público para probes de disponibilidade.
+
+Na interface web, informe o mesmo token no campo **API key**. Ele fica somente no `sessionStorage` da aba e é enviado automaticamente nas ações de upload e consulta.
+
+O workflow do n8n recebe `API_AUTH_TOKEN` pelo Compose e repassa a chave nos nós que chamam o FastAPI. Ao importar o workflow em outra instalação, configure essa variável no ambiente do n8n.
 
 ### Interface web
 
@@ -106,6 +117,12 @@ Depois que uma nota for processada, consulte o status pelo número da nota:
 
 ```bash
 curl http://localhost:8000/notas/12345/status
+```
+
+Com autenticação:
+
+```bash
+curl http://localhost:8000/notas/12345/status -H "X-API-Key: SEU_API_AUTH_TOKEN"
 ```
 
 O endpoint retorna `200` com os dados principais, o status (`aprovada` ou `rejeitada`) e o motivo da rejeição, quando houver. Para uma nota inexistente, retorna `404`. Rejeições também podem ser consultadas pelo número original encontrado pela IA; o identificador `REJEITADA-*` é usado internamente para garantir unicidade no banco.
@@ -153,8 +170,8 @@ Ou usando a mesma imagem do ambiente:
 docker compose run --rm extraction_service pytest -q
 ```
 
-Resultado validado neste ambiente: **13 testes passaram** (`13 passed`). Também foram validados `docker compose config`, build da imagem do serviço, JSON do workflow, JSON do dashboard, `GET /health` com `200`, consulta de status existente com `200` e consulta inexistente com `404`.
+Resultado validado neste ambiente: **15 testes passaram** (`15 passed`). Também foram validados `docker compose config`, build da imagem do serviço, JSON do workflow, JSON do dashboard, `GET /health` com `200`, consulta de status existente com `200`, consulta inexistente com `404` e rejeição de chamadas protegidas sem API key.
 
 ## Segurança
 
-O arquivo `.env` contém a chave do Gemini e é ignorado pelo Git. O `.gitignore` bloqueia `.env` e variantes como `.env.local` e `.env.production`, liberando apenas `.env.example`, que contém somente um placeholder. Nunca coloque chaves reais no README, no workflow ou em arquivos versionados.
+O arquivo `.env` contém `GEMINI_API_KEY` e `API_AUTH_TOKEN` e é ignorado pelo Git. O `.gitignore` bloqueia `.env` e variantes como `.env.local` e `.env.production`, liberando apenas `.env.example`, que contém somente placeholders. O Compose exige `API_AUTH_TOKEN` e falha antes de iniciar se ele não estiver configurado. Nunca coloque chaves reais no README, no workflow, no screenshot ou em arquivos versionados.

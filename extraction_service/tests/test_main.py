@@ -5,6 +5,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import pytest
+from fastapi import HTTPException
 
 from main import (
     DadosNotaFiscal,
@@ -12,6 +13,7 @@ from main import (
     dados_para_rejeicao,
     normalizar_motivo_rejeicao,
     validar_dados,
+    require_api_key,
 )
 
 
@@ -126,3 +128,18 @@ def test_fallback_de_rejeicao_gera_numeros_unicos():
 
 def test_normaliza_motivo_de_rejeicao():
     assert normalizar_motivo_rejeicao("` Número inválido `") == "Número inválido"
+
+
+def test_api_key_ausente_e_rejeitada(monkeypatch):
+    monkeypatch.setattr("main.API_AUTH_TOKEN", "token-de-teste")
+
+    with pytest.raises(HTTPException) as erro:
+        require_api_key(None)
+
+    assert erro.value.status_code == 401
+
+
+def test_api_key_valida_e_aceita(monkeypatch):
+    monkeypatch.setattr("main.API_AUTH_TOKEN", "token-de-teste")
+
+    assert require_api_key("token-de-teste") == "token-de-teste"

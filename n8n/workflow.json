@@ -16,7 +16,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const binary = $input.item.binary.data;\nconst buffer = await $helpers.getBinaryDataBuffer(0, 'data');\nconst base64 = buffer.toString('base64');\n\nconst response = await fetch('http://extraction_service:8000/extract-base64', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({\n    file_base64: base64,\n    mime_type: binary.mimeType,\n    filename: binary.fileName,\n  }),\n});\n\nconst resultado = await response.json();\nreturn [{ json: resultado }];"
+        "jsCode": "const binary = $input.item.binary.data;\nconst buffer = await $helpers.getBinaryDataBuffer(0, 'data');\nconst base64 = buffer.toString('base64');\nconst apiKey = $env.API_AUTH_TOKEN;\n\nconst response = await fetch('http://extraction_service:8000/extract-base64', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },\n  body: JSON.stringify({\n    file_base64: base64,\n    mime_type: binary.mimeType,\n    filename: binary.fileName,\n  }),\n});\n\nconst resultado = await response.json();\nreturn [{ json: resultado }];"
       },
       "id": "2",
       "name": "Extrair Dados (IA)",
@@ -26,7 +26,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const dados = $input.item.json;\n\nconst response = await fetch('http://extraction_service:8000/validate', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify(dados),\n});\n\nconst resultado = await response.json();\nreturn [{ json: { ...dados, ...resultado } }];"
+        "jsCode": "const dados = $input.item.json;\nconst apiKey = $env.API_AUTH_TOKEN;\n\nconst response = await fetch('http://extraction_service:8000/validate', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },\n  body: JSON.stringify(dados),\n});\n\nconst resultado = await response.json();\nreturn [{ json: { ...dados, ...resultado } }];"
       },
       "id": "3",
       "name": "Validar Regras de Negocio",
