@@ -172,6 +172,20 @@ docker compose run --rm extraction_service pytest -q
 
 Resultado validado neste ambiente: **15 testes passaram** (`15 passed`). Também foram validados `docker compose config`, build da imagem do serviço, JSON do workflow, JSON do dashboard, `GET /health` com `200`, consulta de status existente com `200`, consulta inexistente com `404` e rejeição de chamadas protegidas sem API key.
 
+## CI/CD com GitHub Actions
+
+O workflow em `.github/workflows/ci.yml` roda automaticamente em todo `push` e `pull request` direcionado à branch `main`. Ele possui dois jobs independentes:
+
+- **Python tests**: configura Python 3.12, instala `extraction_service/requirements.txt` e executa `pytest -q` dentro de `extraction_service`;
+- **Validate Docker Compose**: executa `docker compose config` usando valores placeholder, sem precisar de chaves reais.
+
+Os testes atuais não precisam de secrets porque não chamam o Gemini. Se forem adicionados testes de integração que usem serviços reais, configure os secrets pela interface do GitHub em **Settings → Secrets and variables → Actions → New repository secret**:
+
+- `GEMINI_API_KEY`;
+- `API_AUTH_TOKEN`.
+
+No workflow, esses valores devem ser referenciados por `${{ secrets.GEMINI_API_KEY }}` e `${{ secrets.API_AUTH_TOKEN }}`. Nunca coloque os valores diretamente no YAML, código, README ou logs.
+
 ## Segurança
 
 O arquivo `.env` contém `GEMINI_API_KEY` e `API_AUTH_TOKEN` e é ignorado pelo Git. O `.gitignore` bloqueia `.env` e variantes como `.env.local` e `.env.production`, liberando apenas `.env.example`, que contém somente placeholders. O Compose exige `API_AUTH_TOKEN` e falha antes de iniciar se ele não estiver configurado. Nunca coloque chaves reais no README, no workflow, no screenshot ou em arquivos versionados.
