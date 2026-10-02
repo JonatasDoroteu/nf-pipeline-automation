@@ -357,7 +357,7 @@ def gravar_nota_fiscal(
     status: str,
     motivo: Optional[str] = None,
     dados_brutos: Optional[DadosNotaFiscal] = None,
-) -> Optional[int]:
+) -> int:
     """Grava a nota fiscal (aprovada ou rejeitada) e retorna o id gerado."""
     conn = psycopg2.connect(DATABASE_URL)
     try:
@@ -385,26 +385,6 @@ def gravar_nota_fiscal(
             return resultado[0] if resultado else None
     finally:
         conn.close()
-
-
-def _atualizar_raw_nota_fiscal(arquivo_hash: str, nota_fiscal_id: int) -> None:
-    try:
-        conn = psycopg2.connect(DATABASE_URL)
-        try:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    UPDATE raw_extracoes
-                    SET nota_fiscal_id = %s
-                    WHERE arquivo_hash = %s
-                    """,
-                    (nota_fiscal_id, arquivo_hash),
-                )
-                conn.commit()
-        finally:
-            conn.close()
-    except Exception:
-        logging.exception("Falha ao associar extração bruta à nota fiscal")
 
 
 def registrar_log(nota_fiscal_id: Optional[int], etapa: str, status: str, detalhes: str = ""):
@@ -439,9 +419,6 @@ class ResultadoProcessamento(BaseModel):
 async def processar_documento(file: UploadFile = File(...)):
     # 1. Extração
     try:
-        conteudo = await file.read()
-        await file.seek(0)
-        arquivo_hash = hashlib.sha256(conteudo).hexdigest()
         dados = await extrair_dados(file)
         registrar_log(None, "extracao", "sucesso")
     except HTTPException as erro:
@@ -470,17 +447,7 @@ async def processar_documento(file: UploadFile = File(...)):
     # 3. Gravação (aprovada)
     registrar_log(None, "validacao", "sucesso")
     nota_id = gravar_nota_fiscal(dados, status="aprovada")
-    if nota_id is None:
-        motivo = "Nota fiscal duplicada (já processada antes)"
-        registrar_log(None, "gravacao", "erro", motivo)
-        return ResultadoProcessamento(
-            status="rejeitada",
-            dados_extraidos=dados,
-            motivo=motivo,
-        )
-
     registrar_log(nota_id, "gravacao", "sucesso")
-    _atualizar_raw_nota_fiscal(arquivo_hash, nota_id)
 
     return ResultadoProcessamento(
         status="aprovada",
