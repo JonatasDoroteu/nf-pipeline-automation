@@ -157,3 +157,40 @@ def test_falha_ao_atualizar_vinculo_raw_nao_e_lancada(monkeypatch):
     )
 
     main._atualizar_raw_nota_fiscal("a" * 64, 10)
+
+
+def test_normaliza_cnpj_sem_pontuacao():
+    assert main.normalizar_cnpj("12345678000195") == "12.345.678/0001-95"
+
+
+def test_cnpj_ja_formatado_permanece_igual():
+    assert main.normalizar_cnpj("12.345.678/0001-95") == "12.345.678/0001-95"
+
+
+def test_cnpj_com_quantidade_de_digitos_diferente_permanece_igual():
+    assert main.normalizar_cnpj("cnpj inválido") == "cnpj inválido"
+
+
+def test_normaliza_numero_nota_sem_remover_zeros():
+    assert main.normalizar_numero_nota("  00123  ") == "00123"
+
+
+def test_extracao_retorna_cnpj_e_numero_normalizados(monkeypatch):
+    texto = json.dumps(
+        {
+            "numero_nota": "  00123  ",
+            "cnpj_emitente": "12345678000195",
+            "valor_total": 10,
+            "data_emissao": "2025-03-09",
+        }
+    )
+    preparar_extracao(
+        monkeypatch,
+        texto,
+        lambda _: FakeConnection([]),
+    )
+
+    resultado = asyncio.run(main._extrair_dados_dos_bytes(b"arquivo", "image/png"))
+
+    assert resultado.numero_nota == "00123"
+    assert resultado.cnpj_emitente == "12.345.678/0001-95"

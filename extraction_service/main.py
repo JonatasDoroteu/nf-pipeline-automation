@@ -181,6 +181,8 @@ async def _extrair_dados_dos_bytes(conteudo: bytes, mime_type: str) -> DadosNota
     except json.JSONDecodeError:
         raise HTTPException(422, f"Não consegui interpretar a resposta da IA: {resposta.text}")
 
+    dados["cnpj_emitente"] = normalizar_cnpj(dados.get("cnpj_emitente"))
+    dados["numero_nota"] = normalizar_numero_nota(dados.get("numero_nota"))
     return DadosNotaFiscal(**dados)
 
 
@@ -210,6 +212,19 @@ def _gravar_raw_extracao(
 # Etapa 2: Validação (lógica pura, sem IA)
 # ---------------------------------------------------------------------------
 
+def normalizar_cnpj(cnpj: Optional[str]) -> Optional[str]:
+    if cnpj is None:
+        return None
+    digitos = re.sub(r"\D", "", cnpj)
+    if len(digitos) != 14:
+        return cnpj
+    return f"{digitos[:2]}.{digitos[2:5]}.{digitos[5:8]}/{digitos[8:12]}-{digitos[12:]}"
+
+
+def normalizar_numero_nota(numero_nota: Optional[str]) -> Optional[str]:
+    return numero_nota.strip() if numero_nota is not None else None
+
+
 def cnpj_e_valido(cnpj: str) -> bool:
     """Valida o formato e o dígito verificador de um CNPJ."""
     cnpj = re.sub(r"\D", "", cnpj or "")
@@ -236,8 +251,16 @@ def nota_ja_existe(numero_nota: str, cnpj: str) -> bool:
     try:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT 1 FROM notas_fiscais WHERE numero_nota = %s AND cnpj_emitente = %s",
-                (numero_nota, cnpj),
+                """
+                SELECT 1
+                FROM notas_fiscais
+                WHERE btrim(numero_nota) = %s
+                  AND regexp_replace(cnpj_emitente, '\\D', '', 'g') = %s
+                """,
+                (
+                    normalizar_numero_nota(numero_nota),
+                    re.sub(r"\D", "", normalizar_cnpj(cnpj) or ""),
+                ),
             )
             return cur.fetchone() is not None
     finally:
