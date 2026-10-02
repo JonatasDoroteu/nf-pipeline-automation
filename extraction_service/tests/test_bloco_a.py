@@ -67,15 +67,18 @@ def test_grava_raw_quando_extracao_tem_sucesso(monkeypatch):
     resultado = asyncio.run(main._extrair_dados_dos_bytes(b"arquivo", "image/png"))
 
     assert resultado.numero_nota == "123"
-    assert len(inserts) == 1
-    query, values = inserts[0]
-    assert "INSERT INTO raw_extracoes" in query
-    assert values == (
+    assert len(inserts) == 2
+    insert_query, insert_values = inserts[0]
+    assert "INSERT INTO raw_extracoes" in insert_query
+    assert insert_values == (
         hashlib.sha256(b"arquivo").hexdigest(),
         texto,
         "gemini-flash-latest",
         "v1",
     )
+    update_query, update_values = inserts[1]
+    assert "UPDATE raw_extracoes" in update_query
+    assert update_values == ("123", None, hashlib.sha256(b"arquivo").hexdigest())
 
 
 def test_grava_raw_mesmo_com_json_invalido(monkeypatch):

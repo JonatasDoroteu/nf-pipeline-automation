@@ -183,7 +183,13 @@ async def _extrair_dados_dos_bytes(conteudo: bytes, mime_type: str) -> DadosNota
 
     dados["cnpj_emitente"] = normalizar_cnpj(dados.get("cnpj_emitente"))
     dados["numero_nota"] = normalizar_numero_nota(dados.get("numero_nota"))
-    return DadosNotaFiscal(**dados)
+    dados_normalizados = DadosNotaFiscal(**dados)
+    _atualizar_raw_dados_extraidos(
+        hashlib.sha256(conteudo).hexdigest(),
+        dados_normalizados.numero_nota,
+        dados_normalizados.cnpj_emitente,
+    )
+    return dados_normalizados
 
 
 def _gravar_raw_extracao(
@@ -198,14 +204,39 @@ def _gravar_raw_extracao(
             cur.execute(
                 """
                 INSERT INTO raw_extracoes
-                    (arquivo_hash, resposta_bruta, modelo, versao_prompt)
-                VALUES (%s, %s, %s, %s)
+                    (arquivo_hash, resposta_bruta, modelo, versao_prompt,
+                     numero_nota_extraido, cnpj_extraido)
+                VALUES (%s, %s, %s, %s, NULL, NULL)
                 """,
                 (arquivo_hash, resposta_bruta, modelo, versao_prompt),
             )
             conn.commit()
     finally:
         conn.close()
+
+
+def _atualizar_raw_dados_extraidos(
+    arquivo_hash: str,
+    numero_nota: Optional[str],
+    cnpj: Optional[str],
+) -> None:
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE raw_extracoes
+                    SET numero_nota_extraido = %s, cnpj_extraido = %s
+                    WHERE arquivo_hash = %s
+                    """,
+                    (numero_nota, cnpj, arquivo_hash),
+                )
+                conn.commit()
+        finally:
+            conn.close()
+    except Exception:
+        logging.exception("Falha ao salvar os campos extraídos na resposta bruta")
 
 
 # ---------------------------------------------------------------------------
