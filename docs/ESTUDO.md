@@ -65,3 +65,14 @@
 - Como você explicaria cada etapa deste pipeline em uma entrevista?
 - Que evidência diferencia um teste com mock de um teste com PostgreSQL real?
 - Como separar uma falha de extração de uma falha de gravação?
+
+## Testes manuais no n8n
+
+1. Reimporte `n8n/workflow.json`.
+2. Envie uma nota válida.
+3. Envie uma nota inválida.
+4. Envie a mesma nota válida duas vezes.
+5. Envie 12 notas rapidamente para provocar HTTP 429.
+6. Confirme que erro de API, inclusive 429, não cria uma linha rejeitada falsa.
+
+Não consigo executar o n8n; esses passos precisam ser validados manualmente.
