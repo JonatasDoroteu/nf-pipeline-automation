@@ -20,6 +20,8 @@ agendada, e não precisa lidar com o arquivo binário da nota fiscal.
 import os
 import re
 import json
+import hashlib
+import logging
 import threading
 import time
 import uuid
@@ -121,6 +123,9 @@ sem markdown, sem texto explicativo, no formato exato abaixo:
 Se não conseguir identificar algum campo com certeza, use null nesse campo.
 """
 
+MODELO_GEMINI = "gemini-flash-latest"
+PROMPT_VERSAO = "v1"
+
 
 @app.post("/extract", response_model=DadosNotaFiscal, dependencies=[Depends(enforce_rate_limit)])
 async def extrair_dados(file: UploadFile = File(...)):
@@ -151,13 +156,23 @@ async def _extrair_dados_dos_bytes(conteudo: bytes, mime_type: str) -> DadosNota
     if not GEMINI_API_KEY:
         raise HTTPException(500, "GEMINI_API_KEY não configurada no .env")
 
-    model = genai.GenerativeModel("gemini-flash-latest")
+    model = genai.GenerativeModel(MODELO_GEMINI)
     resposta = model.generate_content(
         [
             PROMPT_EXTRACAO,
             {"mime_type": mime_type, "data": conteudo},
         ]
     )
+
+    try:
+        _gravar_raw_extracao(
+            hashlib.sha256(conteudo).hexdigest(),
+            resposta.text,
+            MODELO_GEMINI,
+            PROMPT_VERSAO,
+        )
+    except Exception:
+        logging.exception("Falha ao gravar resposta bruta da extração")
 
     texto_limpo = resposta.text.strip().removeprefix("```json").removesuffix("```").strip()
 
@@ -167,6 +182,28 @@ async def _extrair_dados_dos_bytes(conteudo: bytes, mime_type: str) -> DadosNota
         raise HTTPException(422, f"Não consegui interpretar a resposta da IA: {resposta.text}")
 
     return DadosNotaFiscal(**dados)
+
+
+def _gravar_raw_extracao(
+    arquivo_hash: str,
+    resposta_bruta: str,
+    modelo: str,
+    versao_prompt: str,
+) -> None:
+    conn = psycopg2.connect(DATABASE_URL)
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO raw_extracoes
+                    (arquivo_hash, resposta_bruta, modelo, versao_prompt)
+                VALUES (%s, %s, %s, %s)
+                """,
+                (arquivo_hash, resposta_bruta, modelo, versao_prompt),
+            )
+            conn.commit()
+    finally:
+        conn.close()
 
 
 # ---------------------------------------------------------------------------
