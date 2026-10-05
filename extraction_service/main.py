@@ -128,7 +128,9 @@ Se não conseguir identificar algum campo com certeza, use null nesse campo.
 
 MODELO_GEMINI = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
 PROMPT_VERSAO = "v1"
-ESPERAS_503 = [3, 6]  # segundos de espera antes da 2ª e da 3ª tentativa
+TOTAL_DEADLINE_S = 50
+ATTEMPT_TIMEOUT_S = 20
+BACKOFFS_S = (2, 4)
 
 
 @app.post("/extract", response_model=DadosNotaFiscal, dependencies=[Depends(enforce_rate_limit)])
@@ -160,10 +162,16 @@ async def _extrair_dados_dos_bytes(conteudo: bytes, mime_type: str) -> DadosNota
     if not GEMINI_API_KEY:
         raise HTTPException(500, "GEMINI_API_KEY não configurada no .env")
 
+    deadline = time.monotonic() + TOTAL_DEADLINE_S
     model = genai.GenerativeModel(MODELO_GEMINI)
-    total_tentativas = len(ESPERAS_503) + 1
+    total_tentativas = len(BACKOFFS_S) + 1
     resposta = None
+    ultimo_erro = None
     for tentativa in range(total_tentativas):
+        restante = deadline - time.monotonic()
+        if restante <= 0:
+            raise HTTPException(504, "Tempo limite total de 50 segundos ao consultar o Gemini")
+
         try:
             resposta = await asyncio.to_thread(
                 model.generate_content,
@@ -171,26 +179,34 @@ async def _extrair_dados_dos_bytes(conteudo: bytes, mime_type: str) -> DadosNota
                     PROMPT_EXTRACAO,
                     {"mime_type": mime_type, "data": conteudo},
                 ],
-                request_options={"timeout": 45, "retry": None},
+                request_options={"timeout": min(ATTEMPT_TIMEOUT_S, restante), "retry": None},
             )
+            ultimo_erro = None
             break
-        except ServiceUnavailable as erro:
-            logging.warning(
-                "Gemini 503 (tentativa %d/%d): %s",
-                tentativa + 1, total_tentativas, str(erro)[:200],
-            )
-            if tentativa < len(ESPERAS_503):
-                await asyncio.sleep(ESPERAS_503[tentativa])
-                continue
-            raise HTTPException(502, "Gemini indisponível por alta demanda. Tente novamente em instantes")
-        except (DeadlineExceeded, RequestTimeout):
-            raise HTTPException(504, "Tempo limite de 45 segundos ao consultar o Gemini")
+        except (ServiceUnavailable, DeadlineExceeded, RequestTimeout) as erro:
+            ultimo_erro = erro
+            if isinstance(erro, ServiceUnavailable):
+                logging.warning(
+                    "Gemini 503 (tentativa %d/%d): %s",
+                    tentativa + 1, total_tentativas, str(erro)[:200],
+                )
+            if tentativa < len(BACKOFFS_S):
+                espera = BACKOFFS_S[tentativa]
+                restante = deadline - time.monotonic()
+                if restante > espera:
+                    await asyncio.sleep(espera)
+                    continue
         except GoogleAPICallError as erro:
             logging.error("Falha na chamada Gemini: %s - %s", type(erro).__name__, str(erro)[:300])
             raise HTTPException(502, "Falha ao consultar a API do Gemini")
         except RequestException as erro:
             logging.error("Falha de rede na chamada Gemini: %s", type(erro).__name__)
             raise HTTPException(502, "Falha de rede ao consultar a API do Gemini")
+
+    if isinstance(ultimo_erro, (DeadlineExceeded, RequestTimeout)):
+        raise HTTPException(504, "Tempo limite total de 50 segundos ao consultar o Gemini")
+    if isinstance(ultimo_erro, ServiceUnavailable):
+        raise HTTPException(502, "Gemini indisponível por alta demanda. Tente novamente em instantes")
 
     try:
         _gravar_raw_extracao(
