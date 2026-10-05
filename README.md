@@ -197,7 +197,7 @@ Ou usando a mesma imagem do ambiente:
 docker compose run --rm extraction_service pytest -q
 ```
 
-Resultado atual: **31 testes passando** (`31 passed`). Os testes não chamam o Gemini real, portanto não consomem cota nem precisam de chave.
+Resultado atual: **31 testes passando** (`38 passed`). Os testes não chamam o Gemini real, portanto não consomem cota nem precisam de chave.
 
 O fluxo ponta a ponta (webhook → extração → validação → banco) também foi validado manualmente: `POST /extract-base64` com `200`, `POST /validate` com `200` e nota gravada como `aprovada` no Postgres.
 
