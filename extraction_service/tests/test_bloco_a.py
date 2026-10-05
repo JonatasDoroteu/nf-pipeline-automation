@@ -9,6 +9,7 @@ from types import SimpleNamespace
 
 import pytest
 from fastapi import HTTPException
+from google.api_core.exceptions import ResourceExhausted
 from starlette.datastructures import UploadFile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -42,6 +43,34 @@ class FakeConnection:
 
     def close(self):
         pass
+
+
+class RelogioFalso:
+    def __init__(self):
+        self.agora = 0
+        self.esperas = []
+
+    def monotonic(self):
+        return self.agora
+
+    def avancar(self, segundos):
+        self.agora += segundos
+
+    async def sleep(self, segundos):
+        self.esperas.append(segundos)
+        self.avancar(segundos)
+
+
+def usar_relogio_falso(monkeypatch):
+    relogio = RelogioFalso()
+    monkeypatch.setattr(main.time, "monotonic", relogio.monotonic)
+    monkeypatch.setattr(main.asyncio, "sleep", relogio.sleep)
+
+    async def executar_sem_thread(funcao, *args, **kwargs):
+        return funcao(*args, **kwargs)
+
+    monkeypatch.setattr(main.asyncio, "to_thread", executar_sem_thread)
+    return relogio
 
 
 def preparar_extracao(monkeypatch, texto, connect):
@@ -87,7 +116,10 @@ def test_grava_raw_quando_extracao_tem_sucesso(monkeypatch):
     assert update_values == ("123", None, hashlib.sha256(b"arquivo").hexdigest())
     thread_id, kwargs = chamadas[0]
     assert thread_id != threading.get_ident()
-    assert kwargs["request_options"] == {"timeout": 45, "retry": None}
+    assert kwargs["request_options"] == {
+        "timeout": main.ATTEMPT_TIMEOUT_S,
+        "retry": None,
+    }
 
 
 def test_grava_raw_mesmo_com_json_invalido(monkeypatch):
@@ -209,6 +241,7 @@ def test_extracao_retorna_cnpj_e_numero_normalizados(monkeypatch):
 
 
 def test_timeout_do_gemini_retorna_504(monkeypatch):
+    usar_relogio_falso(monkeypatch)
     monkeypatch.setattr(main, "GEMINI_API_KEY", "token-de-teste")
 
     def expirar(*_args, **_kwargs):
@@ -224,10 +257,11 @@ def test_timeout_do_gemini_retorna_504(monkeypatch):
         asyncio.run(main._extrair_dados_dos_bytes(b"arquivo", "image/png"))
 
     assert erro.value.status_code == 504
-    assert "45 segundos" in erro.value.detail
+    assert "50 segundos" in erro.value.detail
 
 
 def test_timeout_http_do_gemini_retorna_504(monkeypatch):
+    usar_relogio_falso(monkeypatch)
     monkeypatch.setattr(main, "GEMINI_API_KEY", "token-de-teste")
 
     def expirar(*_args, **_kwargs):
@@ -279,3 +313,77 @@ def test_falha_de_rede_do_gemini_retorna_502(monkeypatch):
         asyncio.run(main._extrair_dados_dos_bytes(b"arquivo", "image/png"))
 
     assert erro.value.status_code == 502
+
+
+def test_timeouts_das_tentativas_respeitam_deadline_total(monkeypatch):
+    relogio = usar_relogio_falso(monkeypatch)
+    monkeypatch.setattr(main, "GEMINI_API_KEY", "token-de-teste")
+    timeouts = []
+
+    def expirar(*_args, **kwargs):
+        timeout = kwargs["request_options"]["timeout"]
+        timeouts.append(timeout)
+        relogio.avancar(timeout)
+        raise main.DeadlineExceeded("timeout")
+
+    monkeypatch.setattr(
+        main.genai,
+        "GenerativeModel",
+        lambda _: SimpleNamespace(generate_content=expirar),
+    )
+
+    with pytest.raises(HTTPException) as erro:
+        asyncio.run(main._extrair_dados_dos_bytes(b"arquivo", "image/png"))
+
+    assert erro.value.status_code == 504
+    assert timeouts == [20, 20, 4]
+    assert relogio.esperas == [2, 4]
+    assert relogio.agora == main.TOTAL_DEADLINE_S
+
+
+def test_gemini_503_tenta_duas_vezes_antes_do_sucesso(monkeypatch):
+    relogio = usar_relogio_falso(monkeypatch)
+    monkeypatch.setattr(main, "GEMINI_API_KEY", "token-de-teste")
+    monkeypatch.setattr(main.psycopg2, "connect", lambda _: FakeConnection([]))
+    chamadas = []
+
+    def generate_content(*_args, **_kwargs):
+        chamadas.append(None)
+        if len(chamadas) < 3:
+            raise main.ServiceUnavailable("busy")
+        return SimpleNamespace(text='{"numero_nota":"123"}')
+
+    monkeypatch.setattr(
+        main.genai,
+        "GenerativeModel",
+        lambda _: SimpleNamespace(generate_content=generate_content),
+    )
+
+    resultado = asyncio.run(main._extrair_dados_dos_bytes(b"arquivo", "image/png"))
+
+    assert resultado.numero_nota == "123"
+    assert len(chamadas) == 3
+    assert relogio.esperas == [2, 4]
+
+
+def test_429_nao_tenta_novamente(monkeypatch):
+    relogio = usar_relogio_falso(monkeypatch)
+    monkeypatch.setattr(main, "GEMINI_API_KEY", "token-de-teste")
+    chamadas = []
+
+    def quota_esgotada(*_args, **_kwargs):
+        chamadas.append(None)
+        raise ResourceExhausted("quota exhausted")
+
+    monkeypatch.setattr(
+        main.genai,
+        "GenerativeModel",
+        lambda _: SimpleNamespace(generate_content=quota_esgotada),
+    )
+
+    with pytest.raises(HTTPException) as erro:
+        asyncio.run(main._extrair_dados_dos_bytes(b"arquivo", "image/png"))
+
+    assert erro.value.status_code == 502
+    assert len(chamadas) == 1
+    assert relogio.esperas == []
