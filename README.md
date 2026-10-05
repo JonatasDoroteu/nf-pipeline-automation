@@ -8,18 +8,20 @@ O projeto também inclui uma interface web em `http://localhost:8000` para demon
 
 O **n8n** orquestra o fluxo do início ao fim. O serviço em **Python (FastAPI)** entra como microsserviço de apoio, chamado via HTTP, responsável por duas coisas isoladas de propósito:
 
-- **Extração** (`/extract`): usa a API do Gemini para ler o documento e extrair os campos da nota
-- **Validação** (`/validate`): aplica regras de negócio puras (CNPJ, valor, data, duplicidade) — sem depender de IA
+- **Extração** (`/extract-base64`, usado pelo n8n; `/extract` para upload direto): usa a API do Gemini para ler o documento e extrair os campos da nota
+- **Validação** (`/validate`): aplica regras de negócio puras (CNPJ, valor, data, duplicidade), sem depender de IA
 
 Separar extração de validação foi uma decisão deliberada: o provedor de IA pode mudar ou falhar, mas a lógica de negócio não deve depender disso.
 
 ```
-Webhook → Extrair Dados (IA) → HTTP Request → Validar Regras de Negócio → IF (nota válida?)
-                                                                              ├─ true  → Postgres: grava nota aprovada
-                                                                              └─ false → Postgres: grava nota rejeitada (com motivo)
-                                                                                              ↓
-                                                                                    Responde Webhook
+Webhook → Preparar Arquivo (base64) → HTTP Request (/extract-base64) → Validar Regras de Negócio (/validate) → IF (nota válida?)
+                                                                                                                ├─ true  → Postgres: grava nota aprovada
+                                                                                                                └─ false → Postgres: grava nota rejeitada (com motivo)
+                                                                                                                                ↓
+                                                                                                                      Responde Webhook
 ```
+
+O nó **Preparar Arquivo (base64)** não chama IA: ele apenas lê o arquivo recebido no webhook e o converte para base64. A extração acontece uma única vez, no nó **HTTP Request**.
 
 Cada nota rejeitada é gravada no banco (não apenas notificada por e-mail), com:
 - valores de fallback nas colunas obrigatórias quando a IA não consegue extrair um campo (nota inválida/ilegível)
@@ -28,12 +30,12 @@ Cada nota rejeitada é gravada no banco (não apenas notificada por e-mail), com
 
 ## Stack
 
-- **n8n** — orquestração do fluxo
-- **Python / FastAPI** — extração (Gemini) e validação de regras de negócio
-- **Interface web** — upload de nota, acompanhamento das etapas e consulta de status
-- **PostgreSQL** — persistência de notas aprovadas e rejeitadas
-- **Grafana** — dashboard provisionado automaticamente com métricas de aprovação, rejeição e motivos
-- **Docker Compose** — sobe os 4 serviços (n8n, Postgres, extraction_service e Grafana) de uma vez
+- **n8n**: orquestração do fluxo
+- **Python / FastAPI**: extração (Gemini) e validação de regras de negócio
+- **Interface web**: upload de nota, acompanhamento das etapas e consulta de status
+- **PostgreSQL**: persistência de notas aprovadas e rejeitadas
+- **Grafana**: dashboard provisionado automaticamente com métricas de aprovação, rejeição e motivos
+- **Docker Compose**: sobe os 4 serviços (n8n, Postgres, extraction_service e Grafana) de uma vez
 
 ## Estrutura
 
@@ -48,7 +50,7 @@ nf-pipeline-automation/
 │   ├── frontend/               # tela web de upload e status
 │   ├── requirements.txt
 │   ├── Dockerfile
-│   └── tests/test_main.py      # testes automatizados das regras
+│   └── tests/test_main.py      # testes automatizados
 ├── grafana/
 │   ├── dashboards/nf-pipeline.json
 │   └── provisioning/           # datasource e dashboard automáticos
@@ -71,12 +73,15 @@ Ela é servida pelo próprio FastAPI em `http://localhost:8000`, reaproveitando 
    ```bash
    python -c "import secrets; print(secrets.token_urlsafe(32))"
    ```
+   Opcionalmente, defina `GEMINI_MODEL` para trocar o modelo sem alterar o código (padrão: `gemini-flash-latest`).
 3. Suba os containers:
    ```bash
    docker compose up -d --build
    ```
-4. Abra `http://localhost:8000` para usar a interface web de upload e acompanhar o processamento. A captura acima mostra a tela inicial do projeto.
-5. Acesse `http://localhost:5678`, importe `n8n/workflow.json` e configure a credencial do Postgres (host `postgres`, database `nf_pipeline`, user `nf_user`)
+4. Abra `http://localhost:8000` para usar a interface web de upload e acompanhar o processamento.
+5. Acesse `http://localhost:5678`, importe `n8n/workflow.json` e configure **duas credenciais** (credenciais não vão dentro do arquivo exportado):
+   - **Postgres**: host `postgres`, database `nf_pipeline`, user `nf_user`
+   - **Header Auth** (usada pelo nó HTTP Request): nome do header `X-API-Key` e, como valor, o `API_AUTH_TOKEN` do seu `.env`
 6. Publique o workflow e teste:
    ```bash
    curl -X POST http://localhost:5678/webhook/nota-fiscal -F "data=@caminho/para/nota.png"
@@ -91,6 +96,16 @@ Também é possível testar a extração e validação isoladamente, sem o n8n:
 curl -X POST http://localhost:8000/process -H "X-API-Key: SEU_API_AUTH_TOKEN" -F "file=@caminho/para/nota.png"
 ```
 
+### Alterando o `.env`
+
+Variáveis de ambiente são lidas apenas quando o container é criado. Depois de alterar o `.env` (por exemplo, `API_AUTH_TOKEN`), recrie os serviços, senão n8n e FastAPI podem ficar com valores diferentes e a API responderá `401`:
+
+```bash
+docker compose up -d --force-recreate n8n extraction_service
+```
+
+Evite `docker compose down -v`: o `-v` apaga os volumes, incluindo os workflows do n8n e os dados do Postgres.
+
 ### Autenticação da API
 
 Os endpoints de negócio (`/extract`, `/extract-base64`, `/validate`, `/process` e `/notas/{numero_nota}/status`) exigem o header `X-API-Key`. O token é carregado por variável de ambiente e não fica salvo no código, no workflow ou no README. O endpoint `/health` permanece público para probes de disponibilidade.
@@ -101,7 +116,20 @@ O contador é thread-safe e fica em memória no container do FastAPI, adequado p
 
 Na interface web, informe o mesmo token no campo **API key**. Ele fica somente no `sessionStorage` da aba e é enviado automaticamente nas ações de upload e consulta.
 
-O workflow do n8n recebe `API_AUTH_TOKEN` pelo Compose e repassa a chave nos nós que chamam o FastAPI. Ao importar o workflow em outra instalação, configure essa variável no ambiente do n8n.
+No workflow do n8n, o nó HTTP Request usa a credencial Header Auth, e o nó Code **Validar Regras de Negócio** lê `API_AUTH_TOKEN` do ambiente do n8n (repassado pelo Compose). Ao importar o workflow em outra instalação, configure a credencial e confirme que a variável chegou ao container do n8n.
+
+### Resiliência da chamada ao Gemini
+
+A chamada ao Gemini roda fora do loop de eventos (`asyncio.to_thread`) e com política explícita de falhas:
+
+| Situação | Comportamento |
+|---|---|
+| Timeout (45 s por tentativa) | Sem retry; responde `504` |
+| `503` (alta demanda do Gemini) | Até 2 novas tentativas, com espera de 3 s e 6 s; se esgotar, responde `502` |
+| `429` (cota esgotada) | Sem retry, para não gastar cota à toa; responde `502` |
+| Outros erros da API ou de rede | Sem retry; responde `502` |
+
+O timeout do nó HTTP Request no n8n está em 60 s. O modelo é configurável por `GEMINI_MODEL`.
 
 ### Interface web
 
@@ -120,12 +148,6 @@ Ela usa o endpoint `/process` existente, portanto a demonstração visual percor
 Depois que uma nota for processada, consulte o status pelo número da nota:
 
 ```bash
-curl http://localhost:8000/notas/12345/status
-```
-
-Com autenticação:
-
-```bash
 curl http://localhost:8000/notas/12345/status -H "X-API-Key: SEU_API_AUTH_TOKEN"
 ```
 
@@ -133,7 +155,7 @@ O endpoint retorna `200` com os dados principais, o status (`aprovada` ou `rejei
 
 ### Dashboard Grafana
 
-Acesse `http://localhost:3000` após subir o Compose. O login inicial é `admin` / `admin123`. O dashboard **NF Pipeline - Operacao** é criado automaticamente e apresenta:
+Acesse `http://localhost:3000` após subir o Compose. O login inicial é `admin` / `admin123` (credencial de demonstração local; altere antes de expor o Grafana fora da sua máquina). O dashboard **NF Pipeline - Operacao** é criado automaticamente e apresenta:
 
 - total de notas processadas;
 - total de notas aprovadas;
@@ -145,21 +167,22 @@ Acesse `http://localhost:3000` após subir o Compose. O login inicial é `admin`
 
 Em `extraction_service/main.py`, função `validar_dados`:
 
-- CNPJ inválido — validação real dos dígitos verificadores, não só formato (`cnpj_e_valido`)
+- CNPJ inválido: validação real dos dígitos verificadores, não só formato (`cnpj_e_valido`)
 - Valor zero ou negativo
 - Data de emissão no futuro
-- Nota duplicada — consulta ao Postgres (`nota_ja_existe`)
+- Nota duplicada: consulta ao Postgres (`nota_ja_existe`)
 
 ## Testes automatizados
 
-Os testes ficam em `extraction_service/tests/test_main.py` e cobrem:
+Os testes ficam em `extraction_service/tests/` e cobrem:
 
 - validação real de CNPJ, incluindo dígitos verificadores;
 - rejeição de número ausente, CNPJ inválido, valor inválido e data inválida;
 - data futura;
 - nota duplicada;
 - aprovação de nota válida;
-- fallback de rejeição com campos obrigatórios e número único.
+- fallback de rejeição com campos obrigatórios e número único;
+- autenticação por API key e rate limiting.
 
 Para executar localmente com as dependências instaladas:
 
@@ -174,7 +197,9 @@ Ou usando a mesma imagem do ambiente:
 docker compose run --rm extraction_service pytest -q
 ```
 
-Resultado validado neste ambiente: **17 testes passaram** (`17 passed`). Também foram validados `docker compose config`, build da imagem do serviço, JSON do workflow, JSON do dashboard, `GET /health` com `200`, consulta de status existente com `200`, consulta inexistente com `404`, rejeição de chamadas protegidas sem API key e rate limiting com resposta `429`.
+Resultado atual: **38 testes passando** (`38 passed`). Os testes não chamam o Gemini real, portanto não consomem cota nem precisam de chave.
+
+O fluxo ponta a ponta (webhook → extração → validação → banco) também foi validado manualmente: `POST /extract-base64` com `200`, `POST /validate` com `200` e nota gravada como `aprovada` no Postgres.
 
 ## CI/CD com GitHub Actions
 
@@ -193,3 +218,11 @@ No workflow, esses valores devem ser referenciados por `${{ secrets.GEMINI_API_K
 ## Segurança
 
 O arquivo `.env` contém `GEMINI_API_KEY` e `API_AUTH_TOKEN` e é ignorado pelo Git. O `.gitignore` bloqueia `.env` e variantes como `.env.local` e `.env.production`, liberando apenas `.env.example`, que contém somente placeholders. O Compose exige `API_AUTH_TOKEN` e falha antes de iniciar se ele não estiver configurado. Nunca coloque chaves reais no README, no workflow, no screenshot ou em arquivos versionados.
+
+## Limitações conhecidas e próximos passos
+
+- `gemini-flash-latest` é um alias que pode mudar de comportamento sem aviso; para uma avaliação reproduzível, fixar um modelo específico via `GEMINI_MODEL`.
+- A cota gratuita do Gemini limita o volume de testes reais e de avaliação em lote.
+- O projeto usa o SDK `google-generativeai`; avaliar a migração para o SDK atual do Google.
+- Adicionar teste automatizado do retry de 503 (simulando falhas do Gemini), já que os testes atuais não exercitam essa política.
+- Parametrizar a senha do Grafana por variável de ambiente.
