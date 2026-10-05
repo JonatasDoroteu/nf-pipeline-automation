@@ -1,0 +1,491 @@
+{
+  "gerado_em": "2026-09-29T10:42:01",
+  "runs_configurados": 1,
+  "pausa_segundos": 1.0,
+  "normalizacao": {
+    "cnpj_emitente": "somente dígitos",
+    "data_emissao": "YYYY-MM-DD; também aceita dd/mm/aaaa",
+    "valor_total": "float arredondado para 2 casas; vírgula ou ponto decimal",
+    "numero_nota": "string, preservando zeros à esquerda",
+    "esperado_null": "campo intencionalmente ausente; excluído da taxa de acerto"
+  },
+  "resumo": {
+    "media_acerto_total_campos": 100.0,
+    "media_notas_completas": 100.0,
+    "media_por_campo": {
+      "numero_nota": 100.0,
+      "cnpj_emitente": 100.0,
+      "valor_total": 100.0,
+      "data_emissao": 100.0
+    },
+    "por_execucao": [
+      {
+        "run": 1,
+        "acerto_total_campos": 100.0,
+        "notas_completas": 100.0,
+        "por_campo": {
+          "numero_nota": {
+            "acertos": 4,
+            "comparacoes": 4,
+            "percentual": 100.0
+          },
+          "cnpj_emitente": {
+            "acertos": 4,
+            "comparacoes": 4,
+            "percentual": 100.0
+          },
+          "valor_total": {
+            "acertos": 4,
+            "comparacoes": 4,
+            "percentual": 100.0
+          },
+          "data_emissao": {
+            "acertos": 4,
+            "comparacoes": 4,
+            "percentual": 100.0
+          }
+        }
+      }
+    ]
+  },
+  "falhas_api": [
+    {
+      "arquivo": "nf_005.pdf",
+      "run": 1,
+      "categoria": "erro_api"
+    },
+    {
+      "arquivo": "nf_006.pdf",
+      "run": 1,
+      "categoria": "erro_api"
+    },
+    {
+      "arquivo": "nf_007.pdf",
+      "run": 1,
+      "categoria": "erro_api"
+    },
+    {
+      "arquivo": "nf_008.pdf",
+      "run": 1,
+      "categoria": "erro_api"
+    },
+    {
+      "arquivo": "nf_009.pdf",
+      "run": 1,
+      "categoria": "erro_api"
+    },
+    {
+      "arquivo": "nf_010.pdf",
+      "run": 1,
+      "categoria": "erro_api"
+    },
+    {
+      "arquivo": "nf_011.pdf",
+      "run": 1,
+      "categoria": "erro_api"
+    },
+    {
+      "arquivo": "nf_012.pdf",
+      "run": 1,
+      "categoria": "erro_api"
+    },
+    {
+      "arquivo": "nf_013.pdf",
+      "run": 1,
+      "categoria": "erro_api"
+    },
+    {
+      "arquivo": "nf_014.pdf",
+      "run": 1,
+      "categoria": "erro_api"
+    },
+    {
+      "arquivo": "nf_015.pdf",
+      "run": 1,
+      "categoria": "erro_api"
+    }
+  ],
+  "notas": [
+    {
+      "arquivo": "nf_001.pdf",
+      "esperado": {
+        "numero_nota": "00000123",
+        "cnpj_emitente": "12.000.001/0001-15",
+        "valor_total": 1024.5,
+        "data_emissao": "2025-01-15"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "extraido": {
+            "numero_nota": "00000123",
+            "cnpj_emitente": "12.000.001/0001-15",
+            "valor_total": 1024.5,
+            "data_emissao": "2025-01-15"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "00000123",
+              "extraido": "00000123",
+              "esperado_normalizado": "00000123",
+              "extraido_normalizado": "00000123",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.001/0001-15",
+              "extraido": "12.000.001/0001-15",
+              "esperado_normalizado": "12000001000115",
+              "extraido_normalizado": "12000001000115",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 1024.5,
+              "extraido": 1024.5,
+              "esperado_normalizado": 1024.5,
+              "extraido_normalizado": 1024.5,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-01-15",
+              "extraido": "2025-01-15",
+              "esperado_normalizado": "2025-01-15",
+              "extraido_normalizado": "2025-01-15",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_002.pdf",
+      "esperado": {
+        "numero_nota": "123",
+        "cnpj_emitente": "12.000.002/0001-60",
+        "valor_total": 810.0,
+        "data_emissao": "2025-02-03"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "extraido": {
+            "numero_nota": "123",
+            "cnpj_emitente": "12.000.002/0001-60",
+            "valor_total": 810.0,
+            "data_emissao": "2025-02-03"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "123",
+              "extraido": "123",
+              "esperado_normalizado": "123",
+              "extraido_normalizado": "123",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.002/0001-60",
+              "extraido": "12.000.002/0001-60",
+              "esperado_normalizado": "12000002000160",
+              "extraido_normalizado": "12000002000160",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 810.0,
+              "extraido": 810.0,
+              "esperado_normalizado": 810.0,
+              "extraido_normalizado": 810.0,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-02-03",
+              "extraido": "2025-02-03",
+              "esperado_normalizado": "2025-02-03",
+              "extraido_normalizado": "2025-02-03",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_003.pdf",
+      "esperado": {
+        "numero_nota": "0000456",
+        "cnpj_emitente": "12.000.003/0001-04",
+        "valor_total": 256.75,
+        "data_emissao": "2025-03-09"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "extraido": {
+            "numero_nota": "0000456",
+            "cnpj_emitente": "12.000.003/0001-04",
+            "valor_total": 256.75,
+            "data_emissao": "2025-03-09"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "0000456",
+              "extraido": "0000456",
+              "esperado_normalizado": "0000456",
+              "extraido_normalizado": "0000456",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.003/0001-04",
+              "extraido": "12.000.003/0001-04",
+              "esperado_normalizado": "12000003000104",
+              "extraido_normalizado": "12000003000104",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 256.75,
+              "extraido": 256.75,
+              "esperado_normalizado": 256.75,
+              "extraido_normalizado": 256.75,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-03-09",
+              "extraido": "2025-03-09",
+              "esperado_normalizado": "2025-03-09",
+              "extraido_normalizado": "2025-03-09",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_004.pdf",
+      "esperado": {
+        "numero_nota": "78",
+        "cnpj_emitente": "12.000.004/0001-59",
+        "valor_total": 42.9,
+        "data_emissao": "2025-04-21"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "extraido": {
+            "numero_nota": "78",
+            "cnpj_emitente": "12.000.004/0001-59",
+            "valor_total": 42.9,
+            "data_emissao": "2025-04-21"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "78",
+              "extraido": "78",
+              "esperado_normalizado": "78",
+              "extraido_normalizado": "78",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.004/0001-59",
+              "extraido": "12.000.004/0001-59",
+              "esperado_normalizado": "12000004000159",
+              "extraido_normalizado": "12000004000159",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 42.9,
+              "extraido": 42.9,
+              "esperado_normalizado": 42.9,
+              "extraido_normalizado": 42.9,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-04-21",
+              "extraido": "2025-04-21",
+              "esperado_normalizado": "2025-04-21",
+              "extraido_normalizado": "2025-04-21",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_005.pdf",
+      "esperado": {
+        "numero_nota": "0009",
+        "cnpj_emitente": "12.000.005/0001-01",
+        "valor_total": 10999.99,
+        "data_emissao": "2025-05-14"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "falha": "erro_api"
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_006.pdf",
+      "esperado": {
+        "numero_nota": "1000001",
+        "cnpj_emitente": "12.000.006/0001-48",
+        "valor_total": 567.0,
+        "data_emissao": "2025-06-02"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "falha": "erro_api"
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_007.pdf",
+      "esperado": {
+        "numero_nota": "001234",
+        "cnpj_emitente": "12.000.007/0001-92",
+        "valor_total": 3210.08,
+        "data_emissao": "2025-07-19"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "falha": "erro_api"
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_008.pdf",
+      "esperado": {
+        "numero_nota": "88",
+        "cnpj_emitente": "12.000.008/0001-37",
+        "valor_total": 75.3,
+        "data_emissao": "2025-08-05"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "falha": "erro_api"
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_009.pdf",
+      "esperado": {
+        "numero_nota": "0000007",
+        "cnpj_emitente": "12.000.009/0001-81",
+        "valor_total": 980.0,
+        "data_emissao": "2025-09-11"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "falha": "erro_api"
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_010.pdf",
+      "esperado": {
+        "numero_nota": "20260015",
+        "cnpj_emitente": "12.000.010/0001-06",
+        "valor_total": 1400.45,
+        "data_emissao": "2025-10-27"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "falha": "erro_api"
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_011.pdf",
+      "esperado": {
+        "numero_nota": "00077",
+        "cnpj_emitente": "12.000.011/0001-50",
+        "valor_total": 1250.9,
+        "data_emissao": "2025-11-04"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "falha": "erro_api"
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_012.pdf",
+      "esperado": {
+        "numero_nota": "012345",
+        "cnpj_emitente": "12.000.012/0001-03",
+        "valor_total": 999.99,
+        "data_emissao": "2025-11-12"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "falha": "erro_api"
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_013.pdf",
+      "esperado": {
+        "numero_nota": "000013",
+        "cnpj_emitente": "12.000.013/0001-40",
+        "valor_total": 654.32,
+        "data_emissao": null
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "falha": "erro_api"
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_014.pdf",
+      "esperado": {
+        "numero_nota": "14",
+        "cnpj_emitente": "12.000.014/0001-94",
+        "valor_total": 2875.0,
+        "data_emissao": "2025-12-03"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "falha": "erro_api"
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_015.pdf",
+      "esperado": {
+        "numero_nota": "000900",
+        "cnpj_emitente": "12.000.015/0001-39",
+        "valor_total": 1180.45,
+        "data_emissao": "2025-12-18"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "falha": "erro_api"
+        }
+      ]
+    }
+  ]
+}

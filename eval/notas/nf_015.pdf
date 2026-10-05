@@ -1,0 +1,41 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Length 499 >>
+stream
+BT /F1 18 Tf 48 790 Td (NOTA FISCAL DE SERVICOS) Tj ET
+BT /F1 12 Tf 48 748 Td (FORNECEDOR: Delta Oficina Tecnica Ltda) Tj ET
+BT /F1 12 Tf 48 706 Td (CNPJ DO EMITENTE: 12.000.015/0001-39) Tj ET
+BT /F1 12 Tf 48 664 Td (NUMERO DA NOTA: 000900) Tj ET
+BT /F1 12 Tf 48 622 Td (DATA DE EMISSAO: 2025-12-18) Tj ET
+BT /F1 12 Tf 48 580 Td (SUBTOTAL DOS SERVICOS: R$ 1.000,00) Tj ET
+BT /F1 12 Tf 48 538 Td (IMPOSTOS E RETENCOES: R$ 180,45) Tj ET
+BT /F1 12 Tf 48 496 Td (VALOR TOTAL DA NOTA: R$ 1.180,45) Tj ET
+
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000121 00000 n 
+0000000247 00000 n 
+0000000344 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+894
+%%EOF
