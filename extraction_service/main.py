@@ -17,6 +17,7 @@ por exemplo -- ou seja, o n8n cuida da parte de orquestração/notificação
 agendada, e não precisa lidar com o arquivo binário da nota fiscal.
 """
 
+import asyncio
 import os
 import re
 import json
@@ -30,6 +31,8 @@ from typing import Optional
 
 import psycopg2
 import google.generativeai as genai
+from google.api_core.exceptions import DeadlineExceeded, GoogleAPICallError, ServiceUnavailable
+from requests.exceptions import RequestException, Timeout as RequestTimeout
 from fastapi import Depends, FastAPI, Header, UploadFile, File, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -47,7 +50,7 @@ _rate_limit_lock = threading.Lock()
 _rate_limit_requests: dict[str, list[float]] = {}
 
 if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+    genai.configure(api_key=GEMINI_API_KEY, transport="rest")
 
 
 @app.get("/", include_in_schema=False)
@@ -123,8 +126,9 @@ sem markdown, sem texto explicativo, no formato exato abaixo:
 Se não conseguir identificar algum campo com certeza, use null nesse campo.
 """
 
-MODELO_GEMINI = "gemini-flash-latest"
+MODELO_GEMINI = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
 PROMPT_VERSAO = "v1"
+ESPERAS_503 = [3, 6]  # segundos de espera antes da 2ª e da 3ª tentativa
 
 
 @app.post("/extract", response_model=DadosNotaFiscal, dependencies=[Depends(enforce_rate_limit)])
@@ -157,12 +161,36 @@ async def _extrair_dados_dos_bytes(conteudo: bytes, mime_type: str) -> DadosNota
         raise HTTPException(500, "GEMINI_API_KEY não configurada no .env")
 
     model = genai.GenerativeModel(MODELO_GEMINI)
-    resposta = model.generate_content(
-        [
-            PROMPT_EXTRACAO,
-            {"mime_type": mime_type, "data": conteudo},
-        ]
-    )
+    total_tentativas = len(ESPERAS_503) + 1
+    resposta = None
+    for tentativa in range(total_tentativas):
+        try:
+            resposta = await asyncio.to_thread(
+                model.generate_content,
+                [
+                    PROMPT_EXTRACAO,
+                    {"mime_type": mime_type, "data": conteudo},
+                ],
+                request_options={"timeout": 45, "retry": None},
+            )
+            break
+        except ServiceUnavailable as erro:
+            logging.warning(
+                "Gemini 503 (tentativa %d/%d): %s",
+                tentativa + 1, total_tentativas, str(erro)[:200],
+            )
+            if tentativa < len(ESPERAS_503):
+                await asyncio.sleep(ESPERAS_503[tentativa])
+                continue
+            raise HTTPException(502, "Gemini indisponível por alta demanda. Tente novamente em instantes")
+        except (DeadlineExceeded, RequestTimeout):
+            raise HTTPException(504, "Tempo limite de 45 segundos ao consultar o Gemini")
+        except GoogleAPICallError as erro:
+            logging.error("Falha na chamada Gemini: %s - %s", type(erro).__name__, str(erro)[:300])
+            raise HTTPException(502, "Falha ao consultar a API do Gemini")
+        except RequestException as erro:
+            logging.error("Falha de rede na chamada Gemini: %s", type(erro).__name__)
+            raise HTTPException(502, "Falha de rede ao consultar a API do Gemini")
 
     try:
         _gravar_raw_extracao(
