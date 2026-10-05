@@ -17,9 +17,12 @@ por exemplo -- ou seja, o n8n cuida da parte de orquestração/notificação
 agendada, e não precisa lidar com o arquivo binário da nota fiscal.
 """
 
+import asyncio
 import os
 import re
 import json
+import hashlib
+import logging
 import threading
 import time
 import uuid
@@ -28,6 +31,8 @@ from typing import Optional
 
 import psycopg2
 import google.generativeai as genai
+from google.api_core.exceptions import DeadlineExceeded, GoogleAPICallError, ServiceUnavailable
+from requests.exceptions import RequestException, Timeout as RequestTimeout
 from fastapi import Depends, FastAPI, Header, UploadFile, File, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -45,7 +50,7 @@ _rate_limit_lock = threading.Lock()
 _rate_limit_requests: dict[str, list[float]] = {}
 
 if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+    genai.configure(api_key=GEMINI_API_KEY, transport="rest")
 
 
 @app.get("/", include_in_schema=False)
@@ -121,6 +126,10 @@ sem markdown, sem texto explicativo, no formato exato abaixo:
 Se não conseguir identificar algum campo com certeza, use null nesse campo.
 """
 
+MODELO_GEMINI = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
+PROMPT_VERSAO = "v1"
+ESPERAS_503 = [3, 6]  # segundos de espera antes da 2ª e da 3ª tentativa
+
 
 @app.post("/extract", response_model=DadosNotaFiscal, dependencies=[Depends(enforce_rate_limit)])
 async def extrair_dados(file: UploadFile = File(...)):
@@ -151,13 +160,47 @@ async def _extrair_dados_dos_bytes(conteudo: bytes, mime_type: str) -> DadosNota
     if not GEMINI_API_KEY:
         raise HTTPException(500, "GEMINI_API_KEY não configurada no .env")
 
-    model = genai.GenerativeModel("gemini-flash-latest")
-    resposta = model.generate_content(
-        [
-            PROMPT_EXTRACAO,
-            {"mime_type": mime_type, "data": conteudo},
-        ]
-    )
+    model = genai.GenerativeModel(MODELO_GEMINI)
+    total_tentativas = len(ESPERAS_503) + 1
+    resposta = None
+    for tentativa in range(total_tentativas):
+        try:
+            resposta = await asyncio.to_thread(
+                model.generate_content,
+                [
+                    PROMPT_EXTRACAO,
+                    {"mime_type": mime_type, "data": conteudo},
+                ],
+                request_options={"timeout": 45, "retry": None},
+            )
+            break
+        except ServiceUnavailable as erro:
+            logging.warning(
+                "Gemini 503 (tentativa %d/%d): %s",
+                tentativa + 1, total_tentativas, str(erro)[:200],
+            )
+            if tentativa < len(ESPERAS_503):
+                await asyncio.sleep(ESPERAS_503[tentativa])
+                continue
+            raise HTTPException(502, "Gemini indisponível por alta demanda. Tente novamente em instantes")
+        except (DeadlineExceeded, RequestTimeout):
+            raise HTTPException(504, "Tempo limite de 45 segundos ao consultar o Gemini")
+        except GoogleAPICallError as erro:
+            logging.error("Falha na chamada Gemini: %s - %s", type(erro).__name__, str(erro)[:300])
+            raise HTTPException(502, "Falha ao consultar a API do Gemini")
+        except RequestException as erro:
+            logging.error("Falha de rede na chamada Gemini: %s", type(erro).__name__)
+            raise HTTPException(502, "Falha de rede ao consultar a API do Gemini")
+
+    try:
+        _gravar_raw_extracao(
+            hashlib.sha256(conteudo).hexdigest(),
+            resposta.text,
+            MODELO_GEMINI,
+            PROMPT_VERSAO,
+        )
+    except Exception:
+        logging.exception("Falha ao gravar resposta bruta da extração")
 
     texto_limpo = resposta.text.strip().removeprefix("```json").removesuffix("```").strip()
 
@@ -166,12 +209,80 @@ async def _extrair_dados_dos_bytes(conteudo: bytes, mime_type: str) -> DadosNota
     except json.JSONDecodeError:
         raise HTTPException(422, f"Não consegui interpretar a resposta da IA: {resposta.text}")
 
-    return DadosNotaFiscal(**dados)
+    dados["cnpj_emitente"] = normalizar_cnpj(dados.get("cnpj_emitente"))
+    dados["numero_nota"] = normalizar_numero_nota(dados.get("numero_nota"))
+    dados_normalizados = DadosNotaFiscal(**dados)
+    _atualizar_raw_dados_extraidos(
+        hashlib.sha256(conteudo).hexdigest(),
+        dados_normalizados.numero_nota,
+        dados_normalizados.cnpj_emitente,
+    )
+    return dados_normalizados
+
+
+def _gravar_raw_extracao(
+    arquivo_hash: str,
+    resposta_bruta: str,
+    modelo: str,
+    versao_prompt: str,
+) -> None:
+    conn = psycopg2.connect(DATABASE_URL)
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO raw_extracoes
+                    (arquivo_hash, resposta_bruta, modelo, versao_prompt,
+                     numero_nota_extraido, cnpj_extraido)
+                VALUES (%s, %s, %s, %s, NULL, NULL)
+                """,
+                (arquivo_hash, resposta_bruta, modelo, versao_prompt),
+            )
+            conn.commit()
+    finally:
+        conn.close()
+
+
+def _atualizar_raw_dados_extraidos(
+    arquivo_hash: str,
+    numero_nota: Optional[str],
+    cnpj: Optional[str],
+) -> None:
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE raw_extracoes
+                    SET numero_nota_extraido = %s, cnpj_extraido = %s
+                    WHERE arquivo_hash = %s
+                    """,
+                    (numero_nota, cnpj, arquivo_hash),
+                )
+                conn.commit()
+        finally:
+            conn.close()
+    except Exception:
+        logging.exception("Falha ao salvar os campos extraídos na resposta bruta")
 
 
 # ---------------------------------------------------------------------------
 # Etapa 2: Validação (lógica pura, sem IA)
 # ---------------------------------------------------------------------------
+
+def normalizar_cnpj(cnpj: Optional[str]) -> Optional[str]:
+    if cnpj is None:
+        return None
+    digitos = re.sub(r"\D", "", cnpj)
+    if len(digitos) != 14:
+        return cnpj
+    return f"{digitos[:2]}.{digitos[2:5]}.{digitos[5:8]}/{digitos[8:12]}-{digitos[12:]}"
+
+
+def normalizar_numero_nota(numero_nota: Optional[str]) -> Optional[str]:
+    return numero_nota.strip() if numero_nota is not None else None
+
 
 def cnpj_e_valido(cnpj: str) -> bool:
     """Valida o formato e o dígito verificador de um CNPJ."""
@@ -199,8 +310,16 @@ def nota_ja_existe(numero_nota: str, cnpj: str) -> bool:
     try:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT 1 FROM notas_fiscais WHERE numero_nota = %s AND cnpj_emitente = %s",
-                (numero_nota, cnpj),
+                """
+                SELECT 1
+                FROM notas_fiscais
+                WHERE btrim(numero_nota) = %s
+                  AND regexp_replace(cnpj_emitente, '\\D', '', 'g') = %s
+                """,
+                (
+                    normalizar_numero_nota(numero_nota),
+                    re.sub(r"\D", "", normalizar_cnpj(cnpj) or ""),
+                ),
             )
             return cur.fetchone() is not None
     finally:
@@ -320,7 +439,7 @@ def gravar_nota_fiscal(
     status: str,
     motivo: Optional[str] = None,
     dados_brutos: Optional[DadosNotaFiscal] = None,
-) -> int:
+) -> Optional[int]:
     """Grava a nota fiscal (aprovada ou rejeitada) e retorna o id gerado."""
     conn = psycopg2.connect(DATABASE_URL)
     try:
@@ -348,6 +467,26 @@ def gravar_nota_fiscal(
             return resultado[0] if resultado else None
     finally:
         conn.close()
+
+
+def _atualizar_raw_nota_fiscal(arquivo_hash: str, nota_fiscal_id: int) -> None:
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE raw_extracoes
+                    SET nota_fiscal_id = %s
+                    WHERE arquivo_hash = %s
+                    """,
+                    (nota_fiscal_id, arquivo_hash),
+                )
+                conn.commit()
+        finally:
+            conn.close()
+    except Exception:
+        logging.exception("Falha ao associar extração bruta à nota fiscal")
 
 
 def registrar_log(nota_fiscal_id: Optional[int], etapa: str, status: str, detalhes: str = ""):
@@ -382,6 +521,9 @@ class ResultadoProcessamento(BaseModel):
 async def processar_documento(file: UploadFile = File(...)):
     # 1. Extração
     try:
+        conteudo = await file.read()
+        await file.seek(0)
+        arquivo_hash = hashlib.sha256(conteudo).hexdigest()
         dados = await extrair_dados(file)
         registrar_log(None, "extracao", "sucesso")
     except HTTPException as erro:
@@ -410,7 +552,17 @@ async def processar_documento(file: UploadFile = File(...)):
     # 3. Gravação (aprovada)
     registrar_log(None, "validacao", "sucesso")
     nota_id = gravar_nota_fiscal(dados, status="aprovada")
+    if nota_id is None:
+        motivo = "Nota fiscal duplicada (já processada antes)"
+        registrar_log(None, "gravacao", "erro", motivo)
+        return ResultadoProcessamento(
+            status="rejeitada",
+            dados_extraidos=dados,
+            motivo=motivo,
+        )
+
     registrar_log(nota_id, "gravacao", "sucesso")
+    _atualizar_raw_nota_fiscal(arquivo_hash, nota_id)
 
     return ResultadoProcessamento(
         status="aprovada",
