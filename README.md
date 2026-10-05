@@ -124,8 +124,8 @@ A chamada ao Gemini roda fora do loop de eventos (`asyncio.to_thread`) e com pol
 
 | Situação | Comportamento |
 |---|---|
-| Timeout (45 s por tentativa) | Sem retry; responde `504` |
-| `503` (alta demanda do Gemini) | Até 2 novas tentativas, com espera de 3 s e 6 s; se esgotar, responde `502` |
+| Timeout | Prazo total de 50 s; tentativas limitadas a 20 s e retries consomem o mesmo prazo; responde `504` |
+| `503` (alta demanda do Gemini) | Até 2 novas tentativas, com espera de 2 s e 4 s; se esgotar, responde `502` |
 | `429` (cota esgotada) | Sem retry, para não gastar cota à toa; responde `502` |
 | Outros erros da API ou de rede | Sem retry; responde `502` |
 
@@ -224,5 +224,5 @@ O arquivo `.env` contém `GEMINI_API_KEY` e `API_AUTH_TOKEN` e é ignorado pelo 
 - `gemini-flash-latest` é um alias que pode mudar de comportamento sem aviso; para uma avaliação reproduzível, fixar um modelo específico via `GEMINI_MODEL`.
 - A cota gratuita do Gemini limita o volume de testes reais e de avaliação em lote.
 - O projeto usa o SDK `google-generativeai`; avaliar a migração para o SDK atual do Google.
-- Adicionar teste automatizado do retry de 503 (simulando falhas do Gemini), já que os testes atuais não exercitam essa política.
+- A chamada ao Gemini tem prazo total de 50 s, menor que os 60 s do n8n; retries e esperas consomem desse mesmo prazo.
 - Parametrizar a senha do Grafana por variável de ambiente.
