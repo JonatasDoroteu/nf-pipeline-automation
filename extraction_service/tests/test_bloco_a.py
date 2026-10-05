@@ -2,6 +2,7 @@ import asyncio
 import hashlib
 import json
 import sys
+import threading
 from io import BytesIO
 from pathlib import Path
 from types import SimpleNamespace
@@ -44,21 +45,26 @@ class FakeConnection:
 
 
 def preparar_extracao(monkeypatch, texto, connect):
+    chamadas = []
+
+    def generate_content(_, **kwargs):
+        chamadas.append((threading.get_ident(), kwargs))
+        return SimpleNamespace(text=texto)
+
     monkeypatch.setattr(main, "GEMINI_API_KEY", "token-de-teste")
     monkeypatch.setattr(main.psycopg2, "connect", connect)
     monkeypatch.setattr(
         main.genai,
         "GenerativeModel",
-        lambda nome: SimpleNamespace(
-            generate_content=lambda _: SimpleNamespace(text=texto)
-        ),
+        lambda nome: SimpleNamespace(generate_content=generate_content),
     )
+    return chamadas
 
 
 def test_grava_raw_quando_extracao_tem_sucesso(monkeypatch):
     texto = '  {"numero_nota":"123"}  '
     inserts = []
-    preparar_extracao(
+    chamadas = preparar_extracao(
         monkeypatch,
         texto,
         lambda _: FakeConnection(inserts),
@@ -79,6 +85,9 @@ def test_grava_raw_quando_extracao_tem_sucesso(monkeypatch):
     update_query, update_values = inserts[1]
     assert "UPDATE raw_extracoes" in update_query
     assert update_values == ("123", None, hashlib.sha256(b"arquivo").hexdigest())
+    thread_id, kwargs = chamadas[0]
+    assert thread_id != threading.get_ident()
+    assert kwargs["request_options"] == {"timeout": 45, "retry": None}
 
 
 def test_grava_raw_mesmo_com_json_invalido(monkeypatch):
@@ -197,3 +206,76 @@ def test_extracao_retorna_cnpj_e_numero_normalizados(monkeypatch):
 
     assert resultado.numero_nota == "00123"
     assert resultado.cnpj_emitente == "12.345.678/0001-95"
+
+
+def test_timeout_do_gemini_retorna_504(monkeypatch):
+    monkeypatch.setattr(main, "GEMINI_API_KEY", "token-de-teste")
+
+    def expirar(*_args, **_kwargs):
+        raise main.DeadlineExceeded("timeout")
+
+    monkeypatch.setattr(
+        main.genai,
+        "GenerativeModel",
+        lambda _: SimpleNamespace(generate_content=expirar),
+    )
+
+    with pytest.raises(HTTPException) as erro:
+        asyncio.run(main._extrair_dados_dos_bytes(b"arquivo", "image/png"))
+
+    assert erro.value.status_code == 504
+    assert "45 segundos" in erro.value.detail
+
+
+def test_timeout_http_do_gemini_retorna_504(monkeypatch):
+    monkeypatch.setattr(main, "GEMINI_API_KEY", "token-de-teste")
+
+    def expirar(*_args, **_kwargs):
+        raise main.RequestTimeout()
+
+    monkeypatch.setattr(
+        main.genai,
+        "GenerativeModel",
+        lambda _: SimpleNamespace(generate_content=expirar),
+    )
+
+    with pytest.raises(HTTPException) as erro:
+        asyncio.run(main._extrair_dados_dos_bytes(b"arquivo", "image/png"))
+
+    assert erro.value.status_code == 504
+
+
+def test_falha_da_api_gemini_retorna_502(monkeypatch):
+    monkeypatch.setattr(main, "GEMINI_API_KEY", "token-de-teste")
+
+    def falhar(*_args, **_kwargs):
+        raise main.GoogleAPICallError("api unavailable")
+
+    monkeypatch.setattr(
+        main.genai,
+        "GenerativeModel",
+        lambda _: SimpleNamespace(generate_content=falhar),
+    )
+
+    with pytest.raises(HTTPException) as erro:
+        asyncio.run(main._extrair_dados_dos_bytes(b"arquivo", "image/png"))
+
+    assert erro.value.status_code == 502
+
+
+def test_falha_de_rede_do_gemini_retorna_502(monkeypatch):
+    monkeypatch.setattr(main, "GEMINI_API_KEY", "token-de-teste")
+
+    def falhar(*_args, **_kwargs):
+        raise main.RequestException()
+
+    monkeypatch.setattr(
+        main.genai,
+        "GenerativeModel",
+        lambda _: SimpleNamespace(generate_content=falhar),
+    )
+
+    with pytest.raises(HTTPException) as erro:
+        asyncio.run(main._extrair_dados_dos_bytes(b"arquivo", "image/png"))
+
+    assert erro.value.status_code == 502
