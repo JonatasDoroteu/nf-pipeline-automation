@@ -46,6 +46,7 @@ const showResult = (result) => {
   document.querySelector('#data-cnpj').textContent = data.cnpj_emitente || 'Não identificado';
   document.querySelector('#data-value').textContent = data.valor_total != null ? `R$ ${Number(data.valor_total).toFixed(2).replace('.', ',')}` : 'Não identificado';
   document.querySelector('#data-date').textContent = data.data_emissao || 'Não identificada';
+  document.querySelector('#data-stage').textContent = result.etapa || 'Sem classificação';
   setStatus(approved ? 'Aprovada' : result.status === 'rejeitada' ? 'Rejeitada' : 'Erro', approved ? 'approved' : 'rejected');
 };
 

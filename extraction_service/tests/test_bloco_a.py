@@ -102,6 +102,7 @@ def test_grava_raw_quando_extracao_tem_sucesso(monkeypatch):
     resultado = asyncio.run(main._extrair_dados_dos_bytes(b"arquivo", "image/png"))
 
     assert resultado.numero_nota == "123"
+    assert resultado.descricao_itens == ""
     assert len(inserts) == 2
     insert_query, insert_values = inserts[0]
     assert "INSERT INTO raw_extracoes" in insert_query
@@ -109,7 +110,7 @@ def test_grava_raw_quando_extracao_tem_sucesso(monkeypatch):
         hashlib.sha256(b"arquivo").hexdigest(),
         texto,
         "gemini-flash-latest",
-        "v1",
+        "v2",
     )
     update_query, update_values = inserts[1]
     assert "UPDATE raw_extracoes" in update_query

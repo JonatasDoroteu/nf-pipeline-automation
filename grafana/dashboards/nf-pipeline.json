@@ -85,6 +85,54 @@
       ],
       "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
       "options": { "cellHeight": "sm", "footer": { "show": false }, "showHeader": true }
+    },
+    {
+      "id": 6,
+      "type": "barchart",
+      "title": "Gasto vs orçamento por etapa",
+      "datasource": { "type": "postgres", "uid": "nf-postgres" },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 13 },
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT etapa.nome AS etapa, etapa.orcamento_planejado AS \"Orçamento planejado\", COALESCE(SUM(nota.valor_total), 0) AS \"Gasto aprovado\" FROM etapas AS etapa LEFT JOIN notas_fiscais AS nota ON nota.etapa_id = etapa.id AND nota.obra_id = etapa.obra_id AND nota.status = 'aprovada' WHERE etapa.obra_id = 1 GROUP BY etapa.id, etapa.nome, etapa.orcamento_planejado ORDER BY etapa.id;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyBRL",
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "lineWidth": 1,
+            "scaleDistribution": { "type": "linear" },
+            "thresholdsStyle": { "mode": "off" }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "xField": "etapa",
+        "orientation": "horizontal",
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0,
+        "showValue": "auto",
+        "stacking": "none",
+        "groupWidth": 0.7,
+        "barWidth": 0.97,
+        "barRadius": 0,
+        "fullHighlight": false,
+        "tooltip": { "mode": "single", "sort": "none" },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": []
+        }
+      }
     }
   ],
   "templating": { "list": [] },

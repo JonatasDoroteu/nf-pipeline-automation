@@ -1,4 +1,6 @@
+import asyncio
 from datetime import date
+from io import BytesIO
 from pathlib import Path
 import sys
 
@@ -6,13 +8,17 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import pytest
 from fastapi import HTTPException
+from starlette.datastructures import UploadFile
 
 from main import (
     DadosNotaFiscal,
     cnpj_e_valido,
+    classificar_nota,
     dados_para_rejeicao,
     normalizar_motivo_rejeicao,
     enforce_rate_limit,
+    gravar_nota_fiscal,
+    processar_documento,
     validar_dados,
     require_api_key,
 )
@@ -109,6 +115,130 @@ def test_validacao_aprova_nota_valida(monkeypatch):
 
     assert resultado.valido is True
     assert resultado.motivo is None
+
+
+def test_validacao_classifica_e_retorna_etapa(monkeypatch):
+    monkeypatch.setattr("main.nota_ja_existe", lambda *_: False)
+    dados = DadosNotaFiscal(
+        numero_nota="123",
+        cnpj_emitente="04.252.011/0001-10",
+        valor_total=10,
+        data_emissao=date.today().isoformat(),
+        descricao_itens="Telha cerâmica para cobertura",
+    )
+
+    resultado = validar_dados(dados)
+
+    assert resultado.valido is True
+    assert resultado.etapa == "Telhado"
+
+
+def test_nota_sem_descricao_fica_sem_classificacao(monkeypatch):
+    monkeypatch.setattr("main.nota_ja_existe", lambda *_: False)
+    dados = DadosNotaFiscal(
+        numero_nota="123",
+        cnpj_emitente="04.252.011/0001-10",
+        valor_total=10,
+        data_emissao=date.today().isoformat(),
+    )
+
+    resultado = validar_dados(dados)
+
+    assert dados.descricao_itens == ""
+    assert classificar_nota(dados) is None
+    assert resultado.etapa is None
+
+
+def test_process_classifica_e_inclui_etapa_na_resposta(monkeypatch):
+    dados = DadosNotaFiscal(
+        numero_nota="123",
+        cnpj_emitente="04.252.011/0001-10",
+        valor_total=10,
+        data_emissao=date.today().isoformat(),
+        descricao_itens="Janela de alumínio",
+    )
+    gravacoes = []
+
+    async def extrair(_):
+        return dados
+
+    monkeypatch.setattr("main.extrair_dados", extrair)
+    monkeypatch.setattr("main.nota_ja_existe", lambda *_: False)
+    monkeypatch.setattr("main.registrar_log", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        "main.gravar_nota_fiscal",
+        lambda *args, **kwargs: gravacoes.append((args, kwargs)) or 42,
+    )
+    monkeypatch.setattr("main._atualizar_raw_nota_fiscal", lambda *_: None)
+    arquivo = UploadFile(file=BytesIO(b"arquivo"), filename="nota.png")
+
+    resultado = asyncio.run(processar_documento(arquivo))
+
+    assert resultado.status == "aprovada"
+    assert resultado.etapa == "Esquadrias"
+    assert gravacoes[0][1]["etapa"] == "Esquadrias"
+
+
+@pytest.mark.parametrize(
+    ("descricao_itens", "etapa_esperada", "etapa_id_esperada"),
+    [
+        ("Tomada elétrica", "Elétrica", 7),
+        ("", None, None),
+    ],
+)
+def test_gravacao_persiste_obra_e_etapa(
+    monkeypatch,
+    descricao_itens,
+    etapa_esperada,
+    etapa_id_esperada,
+):
+    consultas = []
+
+    class CursorFalso:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_):
+            return False
+
+        def execute(self, consulta, parametros):
+            consultas.append((consulta, parametros))
+
+        def fetchone(self):
+            if "SELECT id FROM etapas" in consultas[-1][0]:
+                return (7,)
+            return (42,)
+
+    class ConexaoFalsa:
+        def cursor(self):
+            return CursorFalso()
+
+        def commit(self):
+            pass
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr("main.DATABASE_URL", "postgresql://teste")
+    monkeypatch.setattr("main.psycopg2.connect", lambda *_: ConexaoFalsa())
+    dados = DadosNotaFiscal(
+        numero_nota="123",
+        cnpj_emitente="04.252.011/0001-10",
+        valor_total=10,
+        data_emissao=date.today().isoformat(),
+        descricao_itens=descricao_itens,
+    )
+
+    nota_id = gravar_nota_fiscal(dados, status="aprovada")
+
+    assert nota_id == 42
+    if etapa_esperada is not None:
+        assert consultas[0][1] == (1, etapa_esperada)
+        insert_consulta = consultas[1]
+    else:
+        assert len(consultas) == 1
+        insert_consulta = consultas[0]
+    assert insert_consulta[1][-2:] == (1, etapa_id_esperada)
 
 
 def test_fallback_de_rejeicao_preenche_campos_obrigatorios():

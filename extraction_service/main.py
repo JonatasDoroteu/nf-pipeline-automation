@@ -27,6 +27,7 @@ import threading
 import time
 import uuid
 from datetime import date, datetime
+from decimal import Decimal
 from typing import Optional
 
 import psycopg2
@@ -38,6 +39,8 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from classificador import classificar
+
 app = FastAPI(title="Serviço de Extração e Validação de Notas Fiscais")
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
@@ -46,6 +49,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 API_AUTH_TOKEN = os.getenv("API_AUTH_TOKEN")
 RATE_LIMIT_REQUESTS = int(os.getenv("RATE_LIMIT_REQUESTS", "10"))
 RATE_LIMIT_WINDOW_SECONDS = int(os.getenv("RATE_LIMIT_WINDOW_SECONDS", "60"))
+OBRA_ID_PADRAO = 1
 _rate_limit_lock = threading.Lock()
 _rate_limit_requests: dict[str, list[float]] = {}
 
@@ -100,11 +104,13 @@ class DadosNotaFiscal(BaseModel):
     cnpj_emitente: Optional[str] = None
     valor_total: Optional[float] = None
     data_emissao: Optional[str] = None  # formato "YYYY-MM-DD"
+    descricao_itens: str = ""
 
 
 class ResultadoValidacao(BaseModel):
     valido: bool
     motivo: Optional[str] = None
+    etapa: Optional[str] = None
 
 
 # ---------------------------------------------------------------------------
@@ -120,14 +126,15 @@ sem markdown, sem texto explicativo, no formato exato abaixo:
   "numero_nota": "string",
   "cnpj_emitente": "string (formato 00.000.000/0000-00)",
   "valor_total": number,
-  "data_emissao": "YYYY-MM-DD"
+  "data_emissao": "YYYY-MM-DD",
+  "descricao_itens": "string com os itens e materiais da nota"
 }
 
 Se não conseguir identificar algum campo com certeza, use null nesse campo.
 """
 
 MODELO_GEMINI = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
-PROMPT_VERSAO = "v1"
+PROMPT_VERSAO = "v2"
 TOTAL_DEADLINE_S = 50
 ATTEMPT_TIMEOUT_S = 20
 BACKOFFS_S = (2, 4)
@@ -227,6 +234,7 @@ async def _extrair_dados_dos_bytes(conteudo: bytes, mime_type: str) -> DadosNota
 
     dados["cnpj_emitente"] = normalizar_cnpj(dados.get("cnpj_emitente"))
     dados["numero_nota"] = normalizar_numero_nota(dados.get("numero_nota"))
+    dados["descricao_itens"] = dados.get("descricao_itens") or ""
     dados_normalizados = DadosNotaFiscal(**dados)
     _atualizar_raw_dados_extraidos(
         hashlib.sha256(conteudo).hexdigest(),
@@ -342,29 +350,43 @@ def nota_ja_existe(numero_nota: str, cnpj: str) -> bool:
         conn.close()
 
 
+def classificar_nota(dados: DadosNotaFiscal) -> Optional[str]:
+    return classificar(dados.descricao_itens)
+
+
 @app.post("/validate", response_model=ResultadoValidacao, dependencies=[Depends(require_api_key)])
 def validar_dados(dados: DadosNotaFiscal):
+    etapa = classificar_nota(dados)
+
     if not dados.numero_nota:
-        return ResultadoValidacao(valido=False, motivo="Número da nota não identificado")
+        return ResultadoValidacao(valido=False, motivo="Número da nota não identificado", etapa=etapa)
 
     if not cnpj_e_valido(dados.cnpj_emitente):
-        return ResultadoValidacao(valido=False, motivo="CNPJ inválido ou não identificado")
+        return ResultadoValidacao(valido=False, motivo="CNPJ inválido ou não identificado", etapa=etapa)
 
     if dados.valor_total is None or dados.valor_total <= 0:
-        return ResultadoValidacao(valido=False, motivo="Valor total inválido (zero, negativo ou ausente)")
+        return ResultadoValidacao(
+            valido=False,
+            motivo="Valor total inválido (zero, negativo ou ausente)",
+            etapa=etapa,
+        )
 
     try:
         data_nota = date.fromisoformat(dados.data_emissao)
     except (ValueError, TypeError):
-        return ResultadoValidacao(valido=False, motivo="Data de emissão inválida")
+        return ResultadoValidacao(valido=False, motivo="Data de emissão inválida", etapa=etapa)
 
     if data_nota > date.today():
-        return ResultadoValidacao(valido=False, motivo="Data de emissão está no futuro")
+        return ResultadoValidacao(valido=False, motivo="Data de emissão está no futuro", etapa=etapa)
 
     if nota_ja_existe(dados.numero_nota, dados.cnpj_emitente):
-        return ResultadoValidacao(valido=False, motivo="Nota fiscal duplicada (já processada antes)")
+        return ResultadoValidacao(
+            valido=False,
+            motivo="Nota fiscal duplicada (já processada antes)",
+            etapa=etapa,
+        )
 
-    return ResultadoValidacao(valido=True)
+    return ResultadoValidacao(valido=True, etapa=etapa)
 
 
 @app.get("/health")
@@ -381,6 +403,102 @@ class StatusNotaFiscal(BaseModel):
     status: str
     motivo_rejeicao: Optional[str] = None
     criado_em: datetime
+
+
+class ResumoEtapa(BaseModel):
+    nome: str
+    orcamento_planejado: float
+    gasto: float
+    percentual: float
+    alerta: bool
+
+
+class ResumoSemClassificacao(BaseModel):
+    gasto: float
+
+
+class ResumoObra(BaseModel):
+    obra_id: int
+    etapas: list[ResumoEtapa]
+    sem_classificacao: ResumoSemClassificacao
+
+
+def calcular_resumo_custos(
+    etapas: list[tuple[str, Decimal, Decimal]],
+    gasto_sem_classificacao: Decimal,
+) -> dict[str, object]:
+    resumo_etapas = []
+    for nome, orcamento, gasto in etapas:
+        orcamento = Decimal(str(orcamento))
+        gasto = Decimal(str(gasto))
+        if orcamento <= 0:
+            raise ValueError(f"O orçamento planejado da etapa {nome} deve ser maior que zero")
+
+        percentual = gasto / orcamento
+        resumo_etapas.append(
+            {
+                "nome": nome,
+                "orcamento_planejado": float(orcamento),
+                "gasto": float(gasto),
+                "percentual": float(percentual),
+                "alerta": percentual >= Decimal("0.9"),
+            }
+        )
+
+    return {
+        "etapas": resumo_etapas,
+        "sem_classificacao": {"gasto": float(Decimal(str(gasto_sem_classificacao)))},
+    }
+
+
+@app.get(
+    "/obras/{obra_id}/resumo",
+    response_model=ResumoObra,
+    dependencies=[Depends(require_api_key)],
+)
+def resumo_obra(obra_id: int):
+    conn = psycopg2.connect(DATABASE_URL)
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT 1 FROM obras WHERE id = %s", (obra_id,))
+            if cur.fetchone() is None:
+                raise HTTPException(404, "Obra não encontrada")
+
+            cur.execute(
+                """
+                SELECT etapa.nome, etapa.orcamento_planejado,
+                       COALESCE(SUM(nota.valor_total), 0) AS gasto
+                FROM etapas AS etapa
+                LEFT JOIN notas_fiscais AS nota
+                    ON nota.etapa_id = etapa.id
+                    AND nota.obra_id = etapa.obra_id
+                    AND nota.status = 'aprovada'
+                WHERE etapa.obra_id = %s
+                GROUP BY etapa.id, etapa.nome, etapa.orcamento_planejado
+                ORDER BY etapa.id
+                """,
+                (obra_id,),
+            )
+            etapas = cur.fetchall()
+
+            cur.execute(
+                """
+                SELECT COALESCE(SUM(valor_total), 0)
+                FROM notas_fiscais
+                WHERE obra_id = %s
+                  AND etapa_id IS NULL
+                  AND status = 'aprovada'
+                """,
+                (obra_id,),
+            )
+            gasto_sem_classificacao = cur.fetchone()[0]
+    finally:
+        conn.close()
+
+    return {
+        "obra_id": obra_id,
+        **calcular_resumo_custos(etapas, gasto_sem_classificacao),
+    }
 
 
 @app.get("/notas/{numero_nota}/status", response_model=StatusNotaFiscal, dependencies=[Depends(require_api_key)])
@@ -455,16 +573,31 @@ def gravar_nota_fiscal(
     status: str,
     motivo: Optional[str] = None,
     dados_brutos: Optional[DadosNotaFiscal] = None,
+    etapa: Optional[str] = None,
 ) -> Optional[int]:
     """Grava a nota fiscal (aprovada ou rejeitada) e retorna o id gerado."""
+    etapa = etapa or classificar_nota(dados_brutos or dados)
+    obra_id = OBRA_ID_PADRAO
     conn = psycopg2.connect(DATABASE_URL)
     try:
         with conn.cursor() as cur:
+            etapa_id = None
+            if etapa is not None:
+                cur.execute(
+                    "SELECT id FROM etapas WHERE obra_id = %s AND nome = %s",
+                    (obra_id, etapa),
+                )
+                etapa_encontrada = cur.fetchone()
+                if etapa_encontrada is None:
+                    raise RuntimeError(f"Etapa classificada não cadastrada para a obra: {etapa}")
+                etapa_id = etapa_encontrada[0]
+
             cur.execute(
                 """
                 INSERT INTO notas_fiscais
-                    (numero_nota, cnpj_emitente, valor_total, data_emissao, status, motivo_rejeicao, dados_brutos_extraidos)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    (numero_nota, cnpj_emitente, valor_total, data_emissao, status, motivo_rejeicao,
+                     dados_brutos_extraidos, obra_id, etapa_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (numero_nota, cnpj_emitente) DO NOTHING
                 RETURNING id
                 """,
@@ -476,6 +609,8 @@ def gravar_nota_fiscal(
                     status,
                     normalizar_motivo_rejeicao(motivo),
                     json.dumps((dados_brutos or dados).model_dump()),
+                    obra_id,
+                    etapa_id,
                 ),
             )
             resultado = cur.fetchone()
@@ -531,6 +666,7 @@ class ResultadoProcessamento(BaseModel):
     dados_extraidos: Optional[DadosNotaFiscal] = None
     motivo: Optional[str] = None
     nota_fiscal_id: Optional[int] = None
+    etapa: Optional[str] = None
 
 
 @app.post("/process", response_model=ResultadoProcessamento, dependencies=[Depends(enforce_rate_limit)])
@@ -548,6 +684,7 @@ async def processar_documento(file: UploadFile = File(...)):
 
     # 2. Validação
     resultado_validacao = validar_dados(dados)
+    etapa = classificar_nota(dados)
 
     if not resultado_validacao.valido:
         registrar_log(None, "validacao", "erro", resultado_validacao.motivo)
@@ -557,17 +694,19 @@ async def processar_documento(file: UploadFile = File(...)):
             status="rejeitada",
             motivo=resultado_validacao.motivo,
             dados_brutos=dados,
+            etapa=etapa,
         )
         return ResultadoProcessamento(
             status="rejeitada",
             dados_extraidos=dados,
             motivo=resultado_validacao.motivo,
             nota_fiscal_id=nota_id,
+            etapa=etapa,
         )
 
     # 3. Gravação (aprovada)
     registrar_log(None, "validacao", "sucesso")
-    nota_id = gravar_nota_fiscal(dados, status="aprovada")
+    nota_id = gravar_nota_fiscal(dados, status="aprovada", etapa=etapa)
     if nota_id is None:
         motivo = "Nota fiscal duplicada (já processada antes)"
         registrar_log(None, "gravacao", "erro", motivo)
@@ -575,6 +714,7 @@ async def processar_documento(file: UploadFile = File(...)):
             status="rejeitada",
             dados_extraidos=dados,
             motivo=motivo,
+            etapa=etapa,
         )
 
     registrar_log(nota_id, "gravacao", "sucesso")
@@ -584,4 +724,5 @@ async def processar_documento(file: UploadFile = File(...)):
         status="aprovada",
         dados_extraidos=dados,
         nota_fiscal_id=nota_id,
+        etapa=etapa,
     )
