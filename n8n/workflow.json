@@ -53,39 +53,16 @@
     },
     {
       "parameters": {
-        "schema": "public",
-        "table": "notas_fiscais",
-        "dataMode": "defineBelow",
-        "valuesToSend": {
-          "values": [
-            {
-              "column": "numero_nota",
-              "value": "={{ $json.numero_nota }}"
-            },
-            {
-              "column": "cnpj_emitente",
-              "value": "={{ $json.cnpj_emitente }}"
-            },
-            {
-              "column": "valor_total",
-              "value": "={{ $json.valor_total }}"
-            },
-            {
-              "column": "data_emissao",
-              "value": "={{ $json.data_emissao }}"
-            },
-            {
-              "column": "status",
-              "value": "aprovada"
-            }
-          ]
-        },
-        "options": {}
+        "operation": "executeQuery",
+        "query": "INSERT INTO notas_fiscais (numero_nota, cnpj_emitente, valor_total, data_emissao, status, obra_id, etapa_id)\nVALUES ($1, $2, $3, $4, 'aprovada', 1,\n  CASE WHEN NULLIF($5::text, '') IS NULL THEN NULL\n       ELSE (SELECT id FROM etapas WHERE obra_id = 1 AND nome = $5::text)\n  END)",
+        "options": {
+          "queryReplacement": "={{ [$json.numero_nota, $json.cnpj_emitente, $json.valor_total, $json.data_emissao, $json.etapa] }}"
+        }
       },
       "id": "50fd2106-80be-4668-977a-5f787324a372",
       "name": "Postgres - Grava Nota Aprovada",
       "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2,
+      "typeVersion": 2.5,
       "position": [
         -544,
         32
@@ -142,43 +119,16 @@
     },
     {
       "parameters": {
-        "schema": "public",
-        "table": "notas_fiscais",
-        "dataMode": "defineBelow",
-        "valuesToSend": {
-          "values": [
-            {
-              "column": "numero_nota",
-              "value": "={{ 'N/A-' + $execution.id }}"
-            },
-            {
-              "column": "cnpj_emitente",
-              "value": "={{ '00000000000000' }}"
-            },
-            {
-              "column": "valor_total",
-              "value": "={{ $json.valor_total || 0 }}"
-            },
-            {
-              "column": "data_emissao",
-              "value": "={{ $json.data_emissao || $now.toISODate() }}"
-            },
-            {
-              "column": "status",
-              "value": "rejeitada"
-            },
-            {
-              "column": "motivo_rejeicao",
-              "value": "={{ $json.motivo || 'Nota inválida' }}"
-            }
-          ]
-        },
-        "options": {}
+        "operation": "executeQuery",
+        "query": "INSERT INTO notas_fiscais (numero_nota, cnpj_emitente, valor_total, data_emissao, status, motivo_rejeicao, obra_id, etapa_id)\nVALUES ($1, $2, $3, $4, 'rejeitada', $5, 1,\n  CASE WHEN NULLIF($6::text, '') IS NULL THEN NULL\n       ELSE (SELECT id FROM etapas WHERE obra_id = 1 AND nome = $6::text)\n  END)",
+        "options": {
+          "queryReplacement": "={{ ['N/A-' + $execution.id, '00000000000000', $json.valor_total || 0, $json.data_emissao || $now.toISODate(), $json.motivo || 'Nota inválida', $json.etapa] }}"
+        }
       },
       "id": "c88fe483-8d71-496a-9772-9b0aa921eebc",
       "name": "Postgres - Grava Nota Rejeitada",
       "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2,
+      "typeVersion": 2.5,
       "position": [
         -464,
         -144

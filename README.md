@@ -34,7 +34,7 @@ Cada nota rejeitada é gravada no banco (não apenas notificada por e-mail), com
 - **Python / FastAPI**: extração (Gemini) e validação de regras de negócio
 - **Interface web**: upload de nota, acompanhamento das etapas e consulta de status
 - **PostgreSQL**: persistência de notas aprovadas e rejeitadas
-- **Grafana**: dashboard provisionado automaticamente com métricas de aprovação, rejeição e motivos
+- **Grafana**: dashboard provisionado automaticamente com métricas operacionais e gasto vs. orçamento por etapa da obra
 - **Docker Compose**: sobe os 4 serviços (n8n, Postgres, extraction_service e Grafana) de uma vez
 
 ## Estrutura
@@ -44,13 +44,15 @@ nf-pipeline-automation/
 ├── docker-compose.yml
 ├── .env.example
 ├── db/
-│   └── init.sql                # cria as tabelas automaticamente
+│   ├── init.sql                # cria as tabelas automaticamente em instalações novas
+│   └── migracao_obras.sql      # migração idempotente para bancos existentes
 ├── extraction_service/
-│   ├── main.py                 # extração (IA) + validação de regras
+│   ├── main.py                 # extração, validação e resumo de custos
+│   ├── classificador.py        # classificação de notas por palavras-chave
 │   ├── frontend/               # tela web de upload e status
 │   ├── requirements.txt
 │   ├── Dockerfile
-│   └── tests/test_main.py      # testes automatizados
+│   └── tests/                  # testes automatizados
 ├── grafana/
 │   ├── dashboards/nf-pipeline.json
 │   └── provisioning/           # datasource e dashboard automáticos
@@ -66,6 +68,28 @@ A interface web coloca o pipeline em primeiro plano para quem está conhecendo o
 
 Ela é servida pelo próprio FastAPI em `http://localhost:8000`, reaproveitando o endpoint `/process` do fluxo principal.
 
+## Controle de custos de obra
+
+O pipeline também demonstra o acompanhamento de custos de uma única obra fictícia: **Casa 60m2 (simulada)**. A obra e as notas deste cenário são dados simulados, não representam uma obra ou compras reais. Os orçamentos por etapa usam preços de referência do SINAPI, e a distribuição desses valores entre as etapas é estimada para fins de demonstração; não substitui orçamento profissional nem consulta à tabela oficial vigente.
+
+A extração inclui `descricao_itens`. Um classificador por palavras-chave atribui a nota a uma etapa; notas aprovadas recebem `obra_id` e `etapa_id`. O endpoint `GET /obras/1/resumo` apresenta, por etapa, o orçamento planejado, o gasto aprovado, a razão gasto/orçamento e um alerta quando essa razão chega a `0.9` (90%). Notas aprovadas sem etapa ficam no campo `sem_classificacao`, separadas das etapas orçadas. O dashboard provisionado do Grafana também compara gasto aprovado e orçamento diretamente no Postgres.
+
+### Aplicar a migração em um banco existente
+
+Em instalações novas, `db/init.sql` cria o esquema e os dados iniciais quando o volume do Postgres é inicializado pela primeira vez. Para atualizar um banco existente sem apagar dados, execute o comando abaixo no PowerShell, a partir da raiz do repositório:
+
+```powershell
+Get-Content -Raw .\db\migracao_obras.sql | docker compose exec -T postgres psql -U nf_user -d nf_pipeline -v ON_ERROR_STOP=1
+```
+
+A migração é idempotente e pode ser reaplicada. Não use `docker compose down -v`: isso apagaria os volumes do Postgres e do n8n.
+
+### Limitações do controle de custos
+
+- A etapa é inferida por palavras-chave da descrição e pode ficar sem classificação ou ser classificada incorretamente.
+- A classificação é feita por nota, não por item; uma nota com itens de etapas diferentes recebe apenas uma etapa prioritária.
+- O projeto contém uma única obra simulada e não oferece interface para corrigir manualmente a etapa ou o orçamento.
+
 ## Como rodar
 
 1. Gere uma chave gratuita da API do Gemini em https://aistudio.google.com/app/apikey
@@ -79,10 +103,11 @@ Ela é servida pelo próprio FastAPI em `http://localhost:8000`, reaproveitando 
    docker compose up -d --build
    ```
 4. Abra `http://localhost:8000` para usar a interface web de upload e acompanhar o processamento.
-5. Acesse `http://localhost:5678`, importe `n8n/workflow.json` e configure **duas credenciais** (credenciais não vão dentro do arquivo exportado):
+5. Acesse `http://localhost:5678`, importe `n8n/workflow.json` e configure **duas credenciais** (credenciais não vão dentro do arquivo exportado). Ao atualizar uma instalação existente, desative o workflow antigo antes de importar a versão atualizada:
    - **Postgres**: host `postgres`, database `nf_pipeline`, user `nf_user`
    - **Header Auth** (usada pelo nó HTTP Request): nome do header `X-API-Key` e, como valor, o `API_AUTH_TOKEN` do seu `.env`
-6. Publique o workflow e teste:
+   - Reconecte a credencial Postgres nos dois nós de gravação; eles usam SQL parametrizado para incluir obra e etapa.
+6. Salve e publique/ative o workflow. Para testar, use uma nota simulada por tentativa, pois a cota do Gemini é limitada:
    ```bash
    curl -X POST http://localhost:5678/webhook/nota-fiscal -F "data=@caminho/para/nota.png"
    ```
@@ -161,7 +186,14 @@ Acesse `http://localhost:3000` após subir o Compose. O login inicial é `admin`
 - total de notas aprovadas;
 - total de notas rejeitadas;
 - processamento por dia;
-- ranking dos motivos de rejeição.
+- ranking dos motivos de rejeição;
+- gasto aprovado versus orçamento planejado por etapa da obra simulada.
+
+O resumo também está disponível pela API autenticada:
+
+```bash
+curl http://localhost:8000/obras/1/resumo -H "X-API-Key: SEU_API_AUTH_TOKEN"
+```
 
 ## Regras de negócio implementadas
 
@@ -182,7 +214,9 @@ Os testes ficam em `extraction_service/tests/` e cobrem:
 - nota duplicada;
 - aprovação de nota válida;
 - fallback de rejeição com campos obrigatórios e número único;
-- autenticação por API key e rate limiting.
+- autenticação por API key e rate limiting;
+- classificação integrada à validação e gravação dos IDs de obra/etapa;
+- cálculo do resumo de custos, alertas, notas sem classificação e proteção do endpoint.
 
 Para executar localmente com as dependências instaladas:
 
@@ -197,9 +231,15 @@ Ou usando a mesma imagem do ambiente:
 docker compose run --rm extraction_service pytest -q
 ```
 
-Resultado atual: **31 testes passando** (`38 passed`). Os testes não chamam o Gemini real, portanto não consomem cota nem precisam de chave.
+O `test_eval.py` é ignorado com um motivo explícito se a pasta `eval/` não estiver disponível dentro da imagem. Para executar também os testes de avaliação, monte essa pasta como somente leitura:
 
-O fluxo ponta a ponta (webhook → extração → validação → banco) também foi validado manualmente: `POST /extract-base64` com `200`, `POST /validate` com `200` e nota gravada como `aprovada` no Postgres.
+```powershell
+docker compose run --rm -v "${PWD}/eval:/eval:ro" extraction_service pytest -q
+```
+
+Resultado atual: **65 testes passando**. Os testes não chamam o Gemini real, portanto não consomem cota nem precisam de chave.
+
+Os testes automatizados não substituem a validação de integração. Depois de aplicar a migração e configurar as credenciais, teste o fluxo ponta a ponta no n8n com uma nota simulada por tentativa e confira a etapa gravada no Postgres.
 
 ## CI/CD com GitHub Actions
 
