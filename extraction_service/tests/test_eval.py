@@ -1,9 +1,16 @@
 from pathlib import Path
 import sys
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "eval"))
-
 import pytest
+
+EVAL_DIR = Path(__file__).resolve().parents[2] / "eval"
+if not EVAL_DIR.is_dir():
+    pytest.skip(
+        f"evaluation tests require the eval directory, not found at {EVAL_DIR}",
+        allow_module_level=True,
+    )
+
+sys.path.insert(0, str(EVAL_DIR))
 
 from run_eval import comparar_campos, normalizar_campo
 
