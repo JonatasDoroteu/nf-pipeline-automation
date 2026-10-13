@@ -49,6 +49,9 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 API_AUTH_TOKEN = os.getenv("API_AUTH_TOKEN")
 RATE_LIMIT_REQUESTS = int(os.getenv("RATE_LIMIT_REQUESTS", "10"))
 RATE_LIMIT_WINDOW_SECONDS = int(os.getenv("RATE_LIMIT_WINDOW_SECONDS", "60"))
+MAX_UPLOAD_SIZE_MB = int(os.getenv("MAX_UPLOAD_SIZE_MB", "10"))
+MAX_UPLOAD_SIZE_BYTES = MAX_UPLOAD_SIZE_MB * 1024 * 1024
+SUPPORTED_MIME_TYPES = {"application/pdf", "image/png", "image/jpeg"}
 OBRA_ID_PADRAO = 1
 _rate_limit_lock = threading.Lock()
 _rate_limit_requests: dict[str, list[float]] = {}
@@ -164,6 +167,12 @@ async def extrair_dados_base64(arquivo: ArquivoBase64):
     inicio = time.monotonic()
     try:
         conteudo = base64.b64decode(arquivo.file_base64)
+        if not conteudo:
+            raise HTTPException(400, "O arquivo está vazio")
+        if arquivo.mime_type not in SUPPORTED_MIME_TYPES:
+            raise HTTPException(415, "Tipo de arquivo não suportado")
+        if len(conteudo) > MAX_UPLOAD_SIZE_BYTES:
+            raise HTTPException(413, "O arquivo excede o tamanho máximo permitido")
         resultado = await _extrair_dados_dos_bytes(conteudo, arquivo.mime_type)
     except HTTPException as erro:
         tipo_erro = type(erro.__cause__ or erro).__name__

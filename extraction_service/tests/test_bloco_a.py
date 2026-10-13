@@ -7,10 +7,12 @@ import threading
 from io import BytesIO
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import Mock
 
 import pytest
 from fastapi import HTTPException
 from google.api_core.exceptions import ResourceExhausted
+from fastapi.testclient import TestClient
 from starlette.datastructures import UploadFile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -89,6 +91,18 @@ def preparar_extracao(monkeypatch, texto, connect):
         lambda nome: SimpleNamespace(generate_content=generate_content),
     )
     return chamadas
+
+
+def preparar_cliente_gemini_mock(monkeypatch):
+    texto = json.dumps({"numero_nota": "123"})
+    modelo = SimpleNamespace(
+        generate_content=lambda *_args, **_kwargs: SimpleNamespace(text=texto)
+    )
+    cliente_gemini = Mock(return_value=modelo)
+    monkeypatch.setattr(main, "GEMINI_API_KEY", "token-de-teste")
+    monkeypatch.setattr(main.genai, "GenerativeModel", cliente_gemini)
+    monkeypatch.setattr(main.psycopg2, "connect", lambda *_: FakeConnection([]))
+    return cliente_gemini
 
 
 def test_grava_raw_quando_extracao_tem_sucesso(monkeypatch):
@@ -183,6 +197,77 @@ def test_extract_base64_registra_duracao_tipo_e_status_sem_conteudo(monkeypatch,
     assert "tipo=Timeout status=504" in caplog.text
     assert conteudo_privado.decode() not in caplog.text
     assert arquivo.file_base64 not in caplog.text
+
+
+@pytest.mark.parametrize(
+    ("conteudo", "mime_type", "status_code", "detail"),
+    [
+        (b"", "application/pdf", 400, "O arquivo está vazio"),
+        (b"conteudo", "text/plain", 415, "Tipo de arquivo não suportado"),
+    ],
+)
+def test_extract_base64_rejeita_entrada_invalida_sem_chamar_gemini(
+    monkeypatch,
+    conteudo,
+    mime_type,
+    status_code,
+    detail,
+):
+    monkeypatch.setattr(main, "API_AUTH_TOKEN", "token-de-teste")
+    cliente_gemini = preparar_cliente_gemini_mock(monkeypatch)
+    resposta = TestClient(main.app).post(
+        "/extract-base64",
+        headers={"X-API-Key": "token-de-teste"},
+        json={
+            "file_base64": base64.b64encode(conteudo).decode("ascii"),
+            "mime_type": mime_type,
+        },
+    )
+
+    cliente_gemini.assert_not_called()
+    assert resposta.status_code == status_code
+    assert resposta.json() == {"detail": detail}
+
+
+def test_extract_base64_rejeita_arquivo_acima_do_limite_sem_chamar_gemini(monkeypatch):
+    monkeypatch.setattr(main, "API_AUTH_TOKEN", "token-de-teste")
+    monkeypatch.setattr(main, "MAX_UPLOAD_SIZE_BYTES", 4, raising=False)
+    cliente_gemini = preparar_cliente_gemini_mock(monkeypatch)
+    resposta = TestClient(main.app).post(
+        "/extract-base64",
+        headers={"X-API-Key": "token-de-teste"},
+        json={
+            "file_base64": base64.b64encode(b"%PDF-").decode("ascii"),
+            "mime_type": "application/pdf",
+        },
+    )
+
+    cliente_gemini.assert_not_called()
+    assert resposta.status_code == 413
+    assert resposta.json() == {"detail": "O arquivo excede o tamanho máximo permitido"}
+
+
+def test_extract_base64_aceita_pdf_valido_com_gemini_mockado(monkeypatch):
+    monkeypatch.setattr(main, "API_AUTH_TOKEN", "token-de-teste")
+    texto = json.dumps({"numero_nota": "123"})
+    inserts = []
+    chamadas = preparar_extracao(
+        monkeypatch,
+        texto,
+        lambda _: FakeConnection(inserts),
+    )
+    resposta = TestClient(main.app).post(
+        "/extract-base64",
+        headers={"X-API-Key": "token-de-teste"},
+        json={
+            "file_base64": base64.b64encode(b"%PDF-1.7 documento de teste").decode("ascii"),
+            "mime_type": "application/pdf",
+        },
+    )
+
+    assert resposta.status_code == 200
+    assert resposta.json()["numero_nota"] == "123"
+    assert len(chamadas) == 1
 
 
 def test_conflito_no_insert_retorna_rejeitada_e_registra_log(monkeypatch):
