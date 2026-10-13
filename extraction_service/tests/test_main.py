@@ -241,6 +241,56 @@ def test_gravacao_persiste_obra_e_etapa(
     assert insert_consulta[1][-2:] == (1, etapa_id_esperada)
 
 
+def test_gravacao_etapa_inexistente_persiste_nota_sem_etapa(monkeypatch, caplog):
+    consultas = []
+
+    class CursorFalso:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_):
+            return False
+
+        def execute(self, consulta, parametros):
+            consultas.append((consulta, parametros))
+
+        def fetchone(self):
+            if "SELECT id FROM etapas" in consultas[-1][0]:
+                return None
+            return (43,)
+
+    class ConexaoFalsa:
+        def cursor(self):
+            return CursorFalso()
+
+        def commit(self):
+            pass
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr("main.DATABASE_URL", "postgresql://teste")
+    monkeypatch.setattr("main.psycopg2.connect", lambda *_: ConexaoFalsa())
+    dados = DadosNotaFiscal(
+        numero_nota="nota-sem-etapa",
+        cnpj_emitente="04.252.011/0001-10",
+        valor_total=10,
+        data_emissao=date.today().isoformat(),
+    )
+
+    nota_id = gravar_nota_fiscal(
+        dados,
+        status="aprovada",
+        etapa="Etapa não cadastrada",
+    )
+
+    assert nota_id == 43
+    assert len(consultas) == 2
+    assert "INSERT INTO notas_fiscais" in consultas[1][0]
+    assert consultas[1][1][-2:] == (1, None)
+    assert "nota será gravada sem classificação" in caplog.text
+
+
 def test_fallback_de_rejeicao_preenche_campos_obrigatorios():
     rejeicao = dados_para_rejeicao(DadosNotaFiscal())
 

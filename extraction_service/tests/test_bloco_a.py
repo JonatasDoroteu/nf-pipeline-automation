@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import hashlib
 import json
 import sys
@@ -157,6 +158,31 @@ def test_falha_ao_gravar_raw_nao_interrompe_extracao(monkeypatch):
     resultado = asyncio.run(main._extrair_dados_dos_bytes(b"arquivo", "image/png"))
 
     assert resultado.numero_nota == "123"
+
+
+def test_extract_base64_registra_duracao_tipo_e_status_sem_conteudo(monkeypatch, caplog):
+    conteudo_privado = b"CONTEUDO-PRIVADO-DO-PDF"
+
+    async def extrair_com_falha(*_args):
+        try:
+            raise main.RequestTimeout("mensagem privada")
+        except main.RequestTimeout as causa:
+            raise HTTPException(504, "timeout") from causa
+
+    monkeypatch.setattr(main, "_extrair_dados_dos_bytes", extrair_com_falha)
+    arquivo = main.ArquivoBase64(
+        file_base64=base64.b64encode(conteudo_privado).decode("ascii"),
+        mime_type="application/pdf",
+    )
+
+    with pytest.raises(HTTPException) as erro:
+        asyncio.run(main.extrair_dados_base64(arquivo))
+
+    assert erro.value.status_code == 504
+    assert "/extract-base64 falhou: duracao=" in caplog.text
+    assert "tipo=Timeout status=504" in caplog.text
+    assert conteudo_privado.decode() not in caplog.text
+    assert arquivo.file_base64 not in caplog.text
 
 
 def test_conflito_no_insert_retorna_rejeitada_e_registra_log(monkeypatch):

@@ -161,8 +161,32 @@ async def extrair_dados_base64(arquivo: ArquivoBase64):
     instável dependendo da versão; JSON puro é muito mais previsível.
     """
     import base64
-    conteudo = base64.b64decode(arquivo.file_base64)
-    return await _extrair_dados_dos_bytes(conteudo, arquivo.mime_type)
+    inicio = time.monotonic()
+    try:
+        conteudo = base64.b64decode(arquivo.file_base64)
+        resultado = await _extrair_dados_dos_bytes(conteudo, arquivo.mime_type)
+    except HTTPException as erro:
+        tipo_erro = type(erro.__cause__ or erro).__name__
+        logging.warning(
+            "/extract-base64 falhou: duracao=%.3fs tipo=%s status=%d",
+            time.monotonic() - inicio,
+            tipo_erro,
+            erro.status_code,
+        )
+        raise
+    except Exception as erro:
+        logging.error(
+            "/extract-base64 falhou: duracao=%.3fs tipo=%s status=500",
+            time.monotonic() - inicio,
+            type(erro).__name__,
+        )
+        raise
+
+    logging.info(
+        "/extract-base64 concluido: duracao=%.3fs status=200",
+        time.monotonic() - inicio,
+    )
+    return resultado
 
 
 async def _extrair_dados_dos_bytes(conteudo: bytes, mime_type: str) -> DadosNotaFiscal:
@@ -195,7 +219,7 @@ async def _extrair_dados_dos_bytes(conteudo: bytes, mime_type: str) -> DadosNota
             if isinstance(erro, ServiceUnavailable):
                 logging.warning(
                     "Gemini 503 (tentativa %d/%d): %s",
-                    tentativa + 1, total_tentativas, str(erro)[:200],
+                    tentativa + 1, total_tentativas, type(erro).__name__,
                 )
             if tentativa < len(BACKOFFS_S):
                 espera = BACKOFFS_S[tentativa]
@@ -204,16 +228,19 @@ async def _extrair_dados_dos_bytes(conteudo: bytes, mime_type: str) -> DadosNota
                     await asyncio.sleep(espera)
                     continue
         except GoogleAPICallError as erro:
-            logging.error("Falha na chamada Gemini: %s - %s", type(erro).__name__, str(erro)[:300])
-            raise HTTPException(502, "Falha ao consultar a API do Gemini")
+            logging.error("Falha na chamada Gemini: %s", type(erro).__name__)
+            raise HTTPException(502, "Falha ao consultar a API do Gemini") from erro
         except RequestException as erro:
             logging.error("Falha de rede na chamada Gemini: %s", type(erro).__name__)
-            raise HTTPException(502, "Falha de rede ao consultar a API do Gemini")
+            raise HTTPException(502, "Falha de rede ao consultar a API do Gemini") from erro
 
     if isinstance(ultimo_erro, (DeadlineExceeded, RequestTimeout)):
-        raise HTTPException(504, "Tempo limite total de 50 segundos ao consultar o Gemini")
+        raise HTTPException(504, "Tempo limite total de 50 segundos ao consultar o Gemini") from ultimo_erro
     if isinstance(ultimo_erro, ServiceUnavailable):
-        raise HTTPException(502, "Gemini indisponível por alta demanda. Tente novamente em instantes")
+        raise HTTPException(
+            502,
+            "Gemini indisponível por alta demanda. Tente novamente em instantes",
+        ) from ultimo_erro
 
     try:
         _gravar_raw_extracao(
@@ -589,8 +616,14 @@ def gravar_nota_fiscal(
                 )
                 etapa_encontrada = cur.fetchone()
                 if etapa_encontrada is None:
-                    raise RuntimeError(f"Etapa classificada não cadastrada para a obra: {etapa}")
-                etapa_id = etapa_encontrada[0]
+                    logging.warning(
+                        "Etapa classificada não cadastrada para a obra; "
+                        "nota será gravada sem classificação (obra_id=%s, etapa=%s)",
+                        obra_id,
+                        etapa,
+                    )
+                else:
+                    etapa_id = etapa_encontrada[0]
 
             cur.execute(
                 """

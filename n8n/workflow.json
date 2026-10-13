@@ -29,7 +29,8 @@
       "position": [
         -1040,
         144
-      ]
+      ],
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -67,6 +68,7 @@
         -544,
         32
       ],
+      "onError": "continueErrorOutput",
       "credentials": {
         "postgres": {
           "id": "QwW1PZELHV2a9wGg",
@@ -110,6 +112,7 @@
       ],
       "id": "531b3822-c69e-4be6-ae16-1b63c0573684",
       "name": "HTTP Request",
+      "onError": "continueErrorOutput",
       "credentials": {
         "httpHeaderAuth": {
           "id": "QQf2dKILR8lsWBcD",
@@ -133,6 +136,7 @@
         -464,
         -144
       ],
+      "onError": "continueErrorOutput",
       "credentials": {
         "postgres": {
           "id": "QwW1PZELHV2a9wGg",
@@ -151,6 +155,57 @@
       "position": [
         -1504,
         144
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"status\": \"erro\", \"etapa\": \"extracao\" } }}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "id": "5d940253-906a-4f9e-8900-00a5a3b4ab13",
+      "name": "Responde Webhook - Erro (extracao)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -1296,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"status\": \"erro\", \"etapa\": \"validacao\" } }}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "id": "68574911-92d3-4e5d-8e67-8cb3fcbad753",
+      "name": "Responde Webhook - Erro (validacao)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"status\": \"erro\", \"etapa\": \"gravacao\" } }}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "id": "146b1300-5e92-4fde-96b4-05fd25665c03",
+      "name": "Responde Webhook - Erro (gravacao)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        320
       ]
     }
   ],
@@ -172,6 +227,13 @@
         [
           {
             "node": "IF - Nota Valida?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responde Webhook - Erro (validacao)",
             "type": "main",
             "index": 0
           }
@@ -204,6 +266,13 @@
             "type": "main",
             "index": 0
           }
+        ],
+        [
+          {
+            "node": "Responde Webhook - Erro (gravacao)",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
@@ -215,6 +284,13 @@
             "type": "main",
             "index": 0
           }
+        ],
+        [
+          {
+            "node": "Responde Webhook - Erro (extracao)",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
@@ -223,6 +299,13 @@
         [
           {
             "node": "Responde Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responde Webhook - Erro (gravacao)",
             "type": "main",
             "index": 0
           }

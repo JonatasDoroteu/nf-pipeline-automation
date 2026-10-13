@@ -6,3 +6,7 @@ __pycache__/
 .env
 *.sql.bak
 backup*.sql
+.vscode/
+eval/resultados/
+resumo.json
+resumo.headers
