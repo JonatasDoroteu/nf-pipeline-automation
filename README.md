@@ -15,14 +15,17 @@ O **n8n** orquestra o recebimento e a persistência. O serviço **Python (FastAP
 Separar extração de validação foi uma decisão deliberada: o provedor de IA pode mudar ou falhar, mas a lógica de negócio não deve depender disso.
 
 ```
-Webhook → Preparar Arquivo (base64) → HTTP Request (/extract-base64) → Validar Regras de Negócio (/validate)
-                                                                            → IF válida? → Postgres: aprovada/rejeitada
-                                                                            → erros → Responde Webhook (HTTP 500)
+Webhook → Preparar Arquivo (base64) → HTTP Request (/extract-base64) → Validar Regras de Negócio (/validate) → IF válida?
+                                                                                                                  ├─ Postgres: grava aprovada
+                                                                                                                  └─ Postgres: grava rejeitada
+Erros em extração, validação ou gravação → Responde Webhook - Erro (HTTP 500)
 ```
 
 O nó **Preparar Arquivo (base64)** não chama IA: ele apenas lê o arquivo recebido no webhook e o converte para base64. A extração acontece uma única vez, no nó **HTTP Request**.
 
 O classificador normaliza caixa, acentos e plurais; quando há correspondências concorrentes, um termo mais específico tem prioridade. Ele procura termos de nove etapas e retorna `null` quando nenhum termo corresponde. Ao gravar, o n8n resolve o `etapa_id` pelo nome da etapa com um subselect; sem correspondência, grava `NULL`.
+
+O endpoint `/extract-base64` valida a entrada antes de chamar o Gemini: arquivo vazio retorna `400`, MIME declarado diferente de `application/pdf`, `image/png` ou `image/jpeg` retorna `415`, e arquivo maior que `MAX_UPLOAD_SIZE_MB` retorna `413`. A validação confere o MIME declarado, não o conteúdo real do arquivo; o limite de tamanho é verificado depois de decodificar o base64. O limite é configurável por variável de ambiente e seu padrão é **10 MB**. Erros no nó de extração do workflow seguem a saída de erro para o responder HTTP 500 com o corpo `{"status":"erro","etapa":"extracao"}`. Os nós de validação e gravação também possuem responders HTTP 500 identificando a etapa (não testado).
 
 Cada nota rejeitada é gravada no banco (não apenas notificada por e-mail), com:
 - valores de fallback nas colunas obrigatórias quando a IA não consegue extrair um campo (nota inválida/ilegível)
@@ -172,7 +175,7 @@ A tela inicial é servida pelo próprio FastAPI e oferece:
 - feedback de erro ou rejeição com o motivo da regra de negócio;
 - consulta de status por número da nota.
 
-Ela usa o endpoint `/process` existente; os resultados desse endpoint são separados dos resultados do workflow n8n na seção de validação abaixo.
+Ela usa o endpoint `/process` existente; seu comportamento não está incluído nas evidências da tabela de validação abaixo.
 
 ### Consulta de status
 
@@ -244,23 +247,19 @@ Sem montar `eval/`, `test_eval.py` é ignorado com um motivo explícito. Para in
 docker compose run --rm -v "${PWD}/eval:/eval:ro" extraction_service python -m pytest -q
 ```
 
-Os testes automatizados não chamam o Gemini real, portanto não consomem cota nem precisam de chave.
-
-Os testes automatizados não substituem verificações operacionais específicas. O ramo de erro do workflow deve ser importado no n8n antes de ser exercitado.
+Os testes automatizados não chamam o Gemini real, portanto não consomem cota nem precisam de chave: o teste de PDF válido usa um mock, e os testes de entrada inválida verificam que o cliente mockado do Gemini não é chamado.
 
 ### Status de validação
 
 | Estado | Verificação |
 |---|---|
-| **PROVADO** | Classificador: testes automatizados e classificação via `/validate`. |
-| **PROVADO** | `GET /obras/1/resumo`: percentuais, alerta, `sem_classificacao`, resposta `404` para obra ausente e `401` sem autenticação válida. |
-| **PROVADO** | Encoding UTF-8 dos nomes das etapas armazenados no banco. |
-| **PROVADO** | Workflow n8n com PDFs reais até o `etapa_id` correto: Fundação (20), Hidráulica (24) e Elétrica (25); `/extract-base64` e `/validate` foram chamados uma vez cada por execução. |
-| **PROVADO** | Consulta SQL equivalente ao painel Grafana para gasto aprovado versus orçamento por etapa. |
-| **NÃO PROVADO** | Abertura e inspeção visual do painel Grafana no navegador. |
-| **NÃO PROVADO** | `/process` gravando `obra_id` e `etapa_id`. |
-| **NÃO PROVADO** | Ramo de erro do n8n: workflow alterado, ainda não importado nem testado. |
-| **NÃO PROVADO** | Comportamento do n8n diante de falha do Gemini após a alteração dos ramos de erro. |
+| **PROVADO** | Teste do ramo de extração com `extraction_service` parado: a contagem de notas permaneceu 5 antes e depois; o webhook respondeu HTTP `500` com `{"status":"erro","etapa":"extracao"}`; execução n8n `53` concluída com a saída `continueErrorOutput` e o responder de extração no snapshot. |
+| **PROVADO** | Dois envios reais pelo webhook do n8n com o Gemini indisponível: o 1º terminou em `503` x3, o serviço respondeu `502`; o 2º terminou em timeout, o serviço respondeu `504`. Nos dois casos o n8n devolveu HTTP `500` `{"status":"erro","etapa":"extracao"}`; contagem de notas 5 antes e depois, nenhuma linha gravada. |
+| **PROVADO** | Testes da Parte 1 no host: **81 passed**; entradas vazia, MIME não suportado e acima do limite retornam `400`, `415` e `413` sem chamada ao Gemini mockado, e PDF válido passa com o Gemini mockado. |
+| **NÃO PROVADO** | Ramo de erro do n8n quando o serviço de extração responde `4xx`; `502`, `504` e conexão recusada foram exercitados. |
+| **NÃO PROVADO** | Extração bem-sucedida pelo n8n real após a validação de entrada: o PDF chegou ao Gemini em duas tentativas (passou nas checagens de vazio, tipo e tamanho), mas o Gemini respondeu `503` e a nota não foi gravada. Rejeições `400`/`413`/`415` pelo n8n também não foram testadas. |
+| **NÃO PROVADO** | Abertura e inspeção visual do painel Grafana na interface. |
+| **NÃO PROVADO** | Pipeline completo com PDF real (webhook → extração → classificação → `etapa_id`) após as alterações desta sessão. |
 
 ## CI/CD com GitHub Actions
 
