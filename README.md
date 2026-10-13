@@ -189,7 +189,7 @@ O endpoint retorna `200` com os dados principais, o status (`aprovada` ou `rejei
 
 ### Dashboard Grafana
 
-Acesse `http://localhost:3000` após subir o Compose. O login inicial é `admin` / `admin123` (credencial de demonstração local; altere antes de expor o Grafana fora da sua máquina). O dashboard **NF Pipeline - Operacao** é criado automaticamente e apresenta:
+Acesse `http://localhost:3001` após subir o Compose. O login inicial é `admin` / `admin123` (credencial de demonstração local; altere antes de expor o Grafana fora da sua máquina). O dashboard **NF Pipeline - Operacao** é criado automaticamente e apresenta:
 
 - total de notas processadas;
 - total de notas aprovadas;
@@ -253,13 +253,15 @@ Os testes automatizados não chamam o Gemini real, portanto não consomem cota n
 
 | Estado | Verificação |
 |---|---|
+| **PROVADO** | Envio real da nota `TESTE-F4-HIDR-001` pelo webhook do n8n após a validação de entrada: HTTP 200 `processado`; `/extract-base64` e `/validate` chamados uma vez cada; nota gravada como `aprovada`, `obra_id` 1, `etapa_id` 24 (Hidráulica). |
+| **PROVADO** | PDF válido aceito pela validação de entrada e extraído pelo n8n real. |
+| **PROVADO** | Painel Grafana aberto na interface em `localhost:3001`; as 9 etapas aparecem com orçamento planejado e a Hidráulica com gasto aprovado visível. |
+| **PROVADO** | Testes da Parte 1 no host: **81 passed**; entradas vazia, MIME não suportado e acima do limite retornam `400`, `415` e `413` sem chamada ao Gemini mockado, e PDF válido passa com o Gemini mockado. |
 | **PROVADO** | Teste do ramo de extração com `extraction_service` parado: a contagem de notas permaneceu 5 antes e depois; o webhook respondeu HTTP `500` com `{"status":"erro","etapa":"extracao"}`; execução n8n `53` concluída com a saída `continueErrorOutput` e o responder de extração no snapshot. |
 | **PROVADO** | Dois envios reais pelo webhook do n8n com o Gemini indisponível: o 1º terminou em `503` x3, o serviço respondeu `502`; o 2º terminou em timeout, o serviço respondeu `504`. Nos dois casos o n8n devolveu HTTP `500` `{"status":"erro","etapa":"extracao"}`; contagem de notas 5 antes e depois, nenhuma linha gravada. |
-| **PROVADO** | Testes da Parte 1 no host: **81 passed**; entradas vazia, MIME não suportado e acima do limite retornam `400`, `415` e `413` sem chamada ao Gemini mockado, e PDF válido passa com o Gemini mockado. |
 | **NÃO PROVADO** | Ramo de erro do n8n quando o serviço de extração responde `4xx`; `502`, `504` e conexão recusada foram exercitados. |
-| **PROVADO** | PDF válido aceito pela validação de entrada e extraído pelo n8n real. As rejeições 400/413/415 pelo n8n não foram testadas. |
-| **NÃO PROVADO** | Abertura e inspeção visual do painel Grafana na interface. |
-| **PROVADO** | Envio real da nota TESTE-F4-HIDR-001 pelo webhook do n8n após a validação de entrada: HTTP 200 processado; /extract-base64 e /validate chamados uma vez cada; nota gravada como aprovada, obra_id 1, etapa_id 24 (Hidráulica). |
+| **NÃO PROVADO** | Rejeições `400`/`413`/`415` passando pelo n8n real; foram testadas apenas diretamente no endpoint, com mocks. |
+| **NÃO PROVADO** | Notas `TESTE-F4-ELET-001` (Elétrica) e `TESTE-F4-FUND-001` (Fundação) pelo n8n real após a validação de entrada; só a Hidráulica foi reenviada. |
 
 ## CI/CD com GitHub Actions
 
