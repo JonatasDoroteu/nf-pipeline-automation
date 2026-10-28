@@ -99,6 +99,26 @@ A migração é idempotente e pode ser reaplicada. Não use `docker compose down
 - A classificação é feita por nota, não por item; uma nota com itens de etapas diferentes recebe apenas uma etapa prioritária.
 - O projeto contém uma única obra simulada e não oferece interface para corrigir manualmente a etapa ou o orçamento.
 
+## Painel de custos da obra (dashboard)
+
+O painel em React + Vite fica separado em `dashboard/` e consome `GET /obras/{id}/resumo`. Ele acompanha a obra simulada Casa 60m² sem alterar o back-end, o Docker, o n8n ou a interface de upload existente.
+
+Há dois modos: **Real**, com campos para chave da API e ID da obra, e **Demo**, com valores fixos de `dashboard/src/dadosDemo.js`. O Demo é ativado automaticamente no build de produção; a obra e seus valores são simulados. A tela mostra orçamento e gasto totais, percentual gasto, etapas em alerta, as nove etapas com barras limitadas a 100% e marca em 90%, e a linha “Sem classificação”. Há estados de carregamento e de erro para chave inválida, obra não encontrada e API fora do ar, com opção “Tentar de novo”.
+
+Para executar, ligue o Docker do NF e, dentro de `dashboard/`, rode `npm install` e `npm run dev`. Abra `http://localhost:5173`. No modo de desenvolvimento, o proxy em `dashboard/vite.config.js` encaminha `/obras` para `http://localhost:8000`, evitando alteração de CORS no back-end. Esse proxy existe somente com `npm run dev`; por isso, o build publicado abre em modo Demo.
+
+A chave é digitada na tela e fica apenas em memória durante a aba aberta; não deve ser colocada no código nem em arquivo versionado. O percentual retornado pela API é uma fração (`0.0717` = `7,17%`). O painel não oferece edição de dados pela interface.
+
+### Status de validação do dashboard
+
+| Estado | Verificação |
+|---|---|
+| **PROVADO** | `npm run build` e `npm run lint` concluídos sem erros. |
+| **PROVADO** | Modo Demo conferido visualmente no navegador: totais, nove etapas, alerta na Hidráulica e linha “Sem classificação”. |
+| **NÃO PROVADO** | Modo Real com chave válida contra a API; mensagens de chave inválida, obra não encontrada e API desligada; layout no celular. |
+
+Prints: a adicionar
+
 ## Como rodar
 
 1. Gere uma chave gratuita da API do Gemini em https://aistudio.google.com/app/apikey
