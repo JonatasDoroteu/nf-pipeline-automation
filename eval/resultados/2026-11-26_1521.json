@@ -1,0 +1,3285 @@
+{
+  "gerado_em": "2026-11-26T15:21:19",
+  "modelo_gemini": "gemini-3.5-flash-lite",
+  "runs_configurados": 3,
+  "max_tentativas": 3,
+  "pausa_segundos": 2.0,
+  "normalizacao": {
+    "cnpj_emitente": "somente dígitos",
+    "data_emissao": "YYYY-MM-DD; também aceita dd/mm/aaaa",
+    "valor_total": "float arredondado para 2 casas; vírgula ou ponto decimal",
+    "numero_nota": "string, preservando zeros à esquerda",
+    "esperado_null": "campo intencionalmente ausente; excluído da taxa de acerto"
+  },
+  "resumo": {
+    "execucoes_totais": 45,
+    "execucoes_validas": 45,
+    "saidas_invalidas": 0,
+    "taxa_saida_invalida": 0.0,
+    "falhas_por_categoria": {
+      "infra_503": 0,
+      "infra_429": 0,
+      "timeout": 0,
+      "json_invalido": 0,
+      "outro": 0
+    },
+    "media_acerto_total_campos": 100.0,
+    "media_notas_completas": 100.0,
+    "media_por_campo": {
+      "numero_nota": 100.0,
+      "cnpj_emitente": 100.0,
+      "valor_total": 100.0,
+      "data_emissao": 100.0
+    },
+    "por_execucao": [
+      {
+        "run": 1,
+        "execucoes_totais": 15,
+        "execucoes_validas": 15,
+        "saidas_invalidas": 0,
+        "taxa_saida_invalida": 0.0,
+        "falhas_por_categoria": {
+          "infra_503": 0,
+          "infra_429": 0,
+          "timeout": 0,
+          "json_invalido": 0,
+          "outro": 0
+        },
+        "acerto_total_campos": 100.0,
+        "notas_completas": 100.0,
+        "notas_completas_acertos": 15,
+        "notas_completas_comparacoes": 15,
+        "por_campo": {
+          "numero_nota": {
+            "acertos": 15,
+            "comparacoes": 15,
+            "percentual": 100.0
+          },
+          "cnpj_emitente": {
+            "acertos": 15,
+            "comparacoes": 15,
+            "percentual": 100.0
+          },
+          "valor_total": {
+            "acertos": 15,
+            "comparacoes": 15,
+            "percentual": 100.0
+          },
+          "data_emissao": {
+            "acertos": 14,
+            "comparacoes": 14,
+            "percentual": 100.0
+          }
+        }
+      },
+      {
+        "run": 2,
+        "execucoes_totais": 15,
+        "execucoes_validas": 15,
+        "saidas_invalidas": 0,
+        "taxa_saida_invalida": 0.0,
+        "falhas_por_categoria": {
+          "infra_503": 0,
+          "infra_429": 0,
+          "timeout": 0,
+          "json_invalido": 0,
+          "outro": 0
+        },
+        "acerto_total_campos": 100.0,
+        "notas_completas": 100.0,
+        "notas_completas_acertos": 15,
+        "notas_completas_comparacoes": 15,
+        "por_campo": {
+          "numero_nota": {
+            "acertos": 15,
+            "comparacoes": 15,
+            "percentual": 100.0
+          },
+          "cnpj_emitente": {
+            "acertos": 15,
+            "comparacoes": 15,
+            "percentual": 100.0
+          },
+          "valor_total": {
+            "acertos": 15,
+            "comparacoes": 15,
+            "percentual": 100.0
+          },
+          "data_emissao": {
+            "acertos": 14,
+            "comparacoes": 14,
+            "percentual": 100.0
+          }
+        }
+      },
+      {
+        "run": 3,
+        "execucoes_totais": 15,
+        "execucoes_validas": 15,
+        "saidas_invalidas": 0,
+        "taxa_saida_invalida": 0.0,
+        "falhas_por_categoria": {
+          "infra_503": 0,
+          "infra_429": 0,
+          "timeout": 0,
+          "json_invalido": 0,
+          "outro": 0
+        },
+        "acerto_total_campos": 100.0,
+        "notas_completas": 100.0,
+        "notas_completas_acertos": 15,
+        "notas_completas_comparacoes": 15,
+        "por_campo": {
+          "numero_nota": {
+            "acertos": 15,
+            "comparacoes": 15,
+            "percentual": 100.0
+          },
+          "cnpj_emitente": {
+            "acertos": 15,
+            "comparacoes": 15,
+            "percentual": 100.0
+          },
+          "valor_total": {
+            "acertos": 15,
+            "comparacoes": 15,
+            "percentual": 100.0
+          },
+          "data_emissao": {
+            "acertos": 14,
+            "comparacoes": 14,
+            "percentual": 100.0
+          }
+        }
+      }
+    ],
+    "por_tipo": {
+      "limpo": {
+        "execucoes_totais": 30,
+        "execucoes_validas": 30,
+        "saidas_invalidas": 0,
+        "taxa_saida_invalida": 0.0,
+        "falhas_por_categoria": {
+          "infra_503": 0,
+          "infra_429": 0,
+          "timeout": 0,
+          "json_invalido": 0,
+          "outro": 0
+        },
+        "media_acerto_total_campos": 100.0,
+        "media_notas_completas": 100.0,
+        "media_por_campo": {
+          "numero_nota": 100.0,
+          "cnpj_emitente": 100.0,
+          "valor_total": 100.0,
+          "data_emissao": 100.0
+        },
+        "por_execucao": [
+          {
+            "run": 1,
+            "execucoes_totais": 10,
+            "execucoes_validas": 10,
+            "saidas_invalidas": 0,
+            "taxa_saida_invalida": 0.0,
+            "falhas_por_categoria": {
+              "infra_503": 0,
+              "infra_429": 0,
+              "timeout": 0,
+              "json_invalido": 0,
+              "outro": 0
+            },
+            "acerto_total_campos": 100.0,
+            "notas_completas": 100.0,
+            "notas_completas_acertos": 10,
+            "notas_completas_comparacoes": 10,
+            "por_campo": {
+              "numero_nota": {
+                "acertos": 10,
+                "comparacoes": 10,
+                "percentual": 100.0
+              },
+              "cnpj_emitente": {
+                "acertos": 10,
+                "comparacoes": 10,
+                "percentual": 100.0
+              },
+              "valor_total": {
+                "acertos": 10,
+                "comparacoes": 10,
+                "percentual": 100.0
+              },
+              "data_emissao": {
+                "acertos": 10,
+                "comparacoes": 10,
+                "percentual": 100.0
+              }
+            }
+          },
+          {
+            "run": 2,
+            "execucoes_totais": 10,
+            "execucoes_validas": 10,
+            "saidas_invalidas": 0,
+            "taxa_saida_invalida": 0.0,
+            "falhas_por_categoria": {
+              "infra_503": 0,
+              "infra_429": 0,
+              "timeout": 0,
+              "json_invalido": 0,
+              "outro": 0
+            },
+            "acerto_total_campos": 100.0,
+            "notas_completas": 100.0,
+            "notas_completas_acertos": 10,
+            "notas_completas_comparacoes": 10,
+            "por_campo": {
+              "numero_nota": {
+                "acertos": 10,
+                "comparacoes": 10,
+                "percentual": 100.0
+              },
+              "cnpj_emitente": {
+                "acertos": 10,
+                "comparacoes": 10,
+                "percentual": 100.0
+              },
+              "valor_total": {
+                "acertos": 10,
+                "comparacoes": 10,
+                "percentual": 100.0
+              },
+              "data_emissao": {
+                "acertos": 10,
+                "comparacoes": 10,
+                "percentual": 100.0
+              }
+            }
+          },
+          {
+            "run": 3,
+            "execucoes_totais": 10,
+            "execucoes_validas": 10,
+            "saidas_invalidas": 0,
+            "taxa_saida_invalida": 0.0,
+            "falhas_por_categoria": {
+              "infra_503": 0,
+              "infra_429": 0,
+              "timeout": 0,
+              "json_invalido": 0,
+              "outro": 0
+            },
+            "acerto_total_campos": 100.0,
+            "notas_completas": 100.0,
+            "notas_completas_acertos": 10,
+            "notas_completas_comparacoes": 10,
+            "por_campo": {
+              "numero_nota": {
+                "acertos": 10,
+                "comparacoes": 10,
+                "percentual": 100.0
+              },
+              "cnpj_emitente": {
+                "acertos": 10,
+                "comparacoes": 10,
+                "percentual": 100.0
+              },
+              "valor_total": {
+                "acertos": 10,
+                "comparacoes": 10,
+                "percentual": 100.0
+              },
+              "data_emissao": {
+                "acertos": 10,
+                "comparacoes": 10,
+                "percentual": 100.0
+              }
+            }
+          }
+        ]
+      },
+      "scan_ruido": {
+        "execucoes_totais": 3,
+        "execucoes_validas": 3,
+        "saidas_invalidas": 0,
+        "taxa_saida_invalida": 0.0,
+        "falhas_por_categoria": {
+          "infra_503": 0,
+          "infra_429": 0,
+          "timeout": 0,
+          "json_invalido": 0,
+          "outro": 0
+        },
+        "media_acerto_total_campos": 100.0,
+        "media_notas_completas": 100.0,
+        "media_por_campo": {
+          "numero_nota": 100.0,
+          "cnpj_emitente": 100.0,
+          "valor_total": 100.0,
+          "data_emissao": 100.0
+        },
+        "por_execucao": [
+          {
+            "run": 1,
+            "execucoes_totais": 1,
+            "execucoes_validas": 1,
+            "saidas_invalidas": 0,
+            "taxa_saida_invalida": 0.0,
+            "falhas_por_categoria": {
+              "infra_503": 0,
+              "infra_429": 0,
+              "timeout": 0,
+              "json_invalido": 0,
+              "outro": 0
+            },
+            "acerto_total_campos": 100.0,
+            "notas_completas": 100.0,
+            "notas_completas_acertos": 1,
+            "notas_completas_comparacoes": 1,
+            "por_campo": {
+              "numero_nota": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "cnpj_emitente": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "valor_total": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "data_emissao": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              }
+            }
+          },
+          {
+            "run": 2,
+            "execucoes_totais": 1,
+            "execucoes_validas": 1,
+            "saidas_invalidas": 0,
+            "taxa_saida_invalida": 0.0,
+            "falhas_por_categoria": {
+              "infra_503": 0,
+              "infra_429": 0,
+              "timeout": 0,
+              "json_invalido": 0,
+              "outro": 0
+            },
+            "acerto_total_campos": 100.0,
+            "notas_completas": 100.0,
+            "notas_completas_acertos": 1,
+            "notas_completas_comparacoes": 1,
+            "por_campo": {
+              "numero_nota": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "cnpj_emitente": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "valor_total": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "data_emissao": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              }
+            }
+          },
+          {
+            "run": 3,
+            "execucoes_totais": 1,
+            "execucoes_validas": 1,
+            "saidas_invalidas": 0,
+            "taxa_saida_invalida": 0.0,
+            "falhas_por_categoria": {
+              "infra_503": 0,
+              "infra_429": 0,
+              "timeout": 0,
+              "json_invalido": 0,
+              "outro": 0
+            },
+            "acerto_total_campos": 100.0,
+            "notas_completas": 100.0,
+            "notas_completas_acertos": 1,
+            "notas_completas_comparacoes": 1,
+            "por_campo": {
+              "numero_nota": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "cnpj_emitente": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "valor_total": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "data_emissao": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              }
+            }
+          }
+        ]
+      },
+      "inclinada": {
+        "execucoes_totais": 3,
+        "execucoes_validas": 3,
+        "saidas_invalidas": 0,
+        "taxa_saida_invalida": 0.0,
+        "falhas_por_categoria": {
+          "infra_503": 0,
+          "infra_429": 0,
+          "timeout": 0,
+          "json_invalido": 0,
+          "outro": 0
+        },
+        "media_acerto_total_campos": 100.0,
+        "media_notas_completas": 100.0,
+        "media_por_campo": {
+          "numero_nota": 100.0,
+          "cnpj_emitente": 100.0,
+          "valor_total": 100.0,
+          "data_emissao": 100.0
+        },
+        "por_execucao": [
+          {
+            "run": 1,
+            "execucoes_totais": 1,
+            "execucoes_validas": 1,
+            "saidas_invalidas": 0,
+            "taxa_saida_invalida": 0.0,
+            "falhas_por_categoria": {
+              "infra_503": 0,
+              "infra_429": 0,
+              "timeout": 0,
+              "json_invalido": 0,
+              "outro": 0
+            },
+            "acerto_total_campos": 100.0,
+            "notas_completas": 100.0,
+            "notas_completas_acertos": 1,
+            "notas_completas_comparacoes": 1,
+            "por_campo": {
+              "numero_nota": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "cnpj_emitente": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "valor_total": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "data_emissao": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              }
+            }
+          },
+          {
+            "run": 2,
+            "execucoes_totais": 1,
+            "execucoes_validas": 1,
+            "saidas_invalidas": 0,
+            "taxa_saida_invalida": 0.0,
+            "falhas_por_categoria": {
+              "infra_503": 0,
+              "infra_429": 0,
+              "timeout": 0,
+              "json_invalido": 0,
+              "outro": 0
+            },
+            "acerto_total_campos": 100.0,
+            "notas_completas": 100.0,
+            "notas_completas_acertos": 1,
+            "notas_completas_comparacoes": 1,
+            "por_campo": {
+              "numero_nota": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "cnpj_emitente": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "valor_total": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "data_emissao": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              }
+            }
+          },
+          {
+            "run": 3,
+            "execucoes_totais": 1,
+            "execucoes_validas": 1,
+            "saidas_invalidas": 0,
+            "taxa_saida_invalida": 0.0,
+            "falhas_por_categoria": {
+              "infra_503": 0,
+              "infra_429": 0,
+              "timeout": 0,
+              "json_invalido": 0,
+              "outro": 0
+            },
+            "acerto_total_campos": 100.0,
+            "notas_completas": 100.0,
+            "notas_completas_acertos": 1,
+            "notas_completas_comparacoes": 1,
+            "por_campo": {
+              "numero_nota": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "cnpj_emitente": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "valor_total": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "data_emissao": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              }
+            }
+          }
+        ]
+      },
+      "sem_data": {
+        "execucoes_totais": 3,
+        "execucoes_validas": 3,
+        "saidas_invalidas": 0,
+        "taxa_saida_invalida": 0.0,
+        "falhas_por_categoria": {
+          "infra_503": 0,
+          "infra_429": 0,
+          "timeout": 0,
+          "json_invalido": 0,
+          "outro": 0
+        },
+        "media_acerto_total_campos": 100.0,
+        "media_notas_completas": 100.0,
+        "media_por_campo": {
+          "numero_nota": 100.0,
+          "cnpj_emitente": 100.0,
+          "valor_total": 100.0,
+          "data_emissao": null
+        },
+        "por_execucao": [
+          {
+            "run": 1,
+            "execucoes_totais": 1,
+            "execucoes_validas": 1,
+            "saidas_invalidas": 0,
+            "taxa_saida_invalida": 0.0,
+            "falhas_por_categoria": {
+              "infra_503": 0,
+              "infra_429": 0,
+              "timeout": 0,
+              "json_invalido": 0,
+              "outro": 0
+            },
+            "acerto_total_campos": 100.0,
+            "notas_completas": 100.0,
+            "notas_completas_acertos": 1,
+            "notas_completas_comparacoes": 1,
+            "por_campo": {
+              "numero_nota": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "cnpj_emitente": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "valor_total": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "data_emissao": {
+                "acertos": 0,
+                "comparacoes": 0,
+                "percentual": null
+              }
+            }
+          },
+          {
+            "run": 2,
+            "execucoes_totais": 1,
+            "execucoes_validas": 1,
+            "saidas_invalidas": 0,
+            "taxa_saida_invalida": 0.0,
+            "falhas_por_categoria": {
+              "infra_503": 0,
+              "infra_429": 0,
+              "timeout": 0,
+              "json_invalido": 0,
+              "outro": 0
+            },
+            "acerto_total_campos": 100.0,
+            "notas_completas": 100.0,
+            "notas_completas_acertos": 1,
+            "notas_completas_comparacoes": 1,
+            "por_campo": {
+              "numero_nota": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "cnpj_emitente": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "valor_total": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "data_emissao": {
+                "acertos": 0,
+                "comparacoes": 0,
+                "percentual": null
+              }
+            }
+          },
+          {
+            "run": 3,
+            "execucoes_totais": 1,
+            "execucoes_validas": 1,
+            "saidas_invalidas": 0,
+            "taxa_saida_invalida": 0.0,
+            "falhas_por_categoria": {
+              "infra_503": 0,
+              "infra_429": 0,
+              "timeout": 0,
+              "json_invalido": 0,
+              "outro": 0
+            },
+            "acerto_total_campos": 100.0,
+            "notas_completas": 100.0,
+            "notas_completas_acertos": 1,
+            "notas_completas_comparacoes": 1,
+            "por_campo": {
+              "numero_nota": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "cnpj_emitente": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "valor_total": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "data_emissao": {
+                "acertos": 0,
+                "comparacoes": 0,
+                "percentual": null
+              }
+            }
+          }
+        ]
+      },
+      "comprovante": {
+        "execucoes_totais": 3,
+        "execucoes_validas": 3,
+        "saidas_invalidas": 0,
+        "taxa_saida_invalida": 0.0,
+        "falhas_por_categoria": {
+          "infra_503": 0,
+          "infra_429": 0,
+          "timeout": 0,
+          "json_invalido": 0,
+          "outro": 0
+        },
+        "media_acerto_total_campos": 100.0,
+        "media_notas_completas": 100.0,
+        "media_por_campo": {
+          "numero_nota": 100.0,
+          "cnpj_emitente": 100.0,
+          "valor_total": 100.0,
+          "data_emissao": 100.0
+        },
+        "por_execucao": [
+          {
+            "run": 1,
+            "execucoes_totais": 1,
+            "execucoes_validas": 1,
+            "saidas_invalidas": 0,
+            "taxa_saida_invalida": 0.0,
+            "falhas_por_categoria": {
+              "infra_503": 0,
+              "infra_429": 0,
+              "timeout": 0,
+              "json_invalido": 0,
+              "outro": 0
+            },
+            "acerto_total_campos": 100.0,
+            "notas_completas": 100.0,
+            "notas_completas_acertos": 1,
+            "notas_completas_comparacoes": 1,
+            "por_campo": {
+              "numero_nota": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "cnpj_emitente": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "valor_total": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "data_emissao": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              }
+            }
+          },
+          {
+            "run": 2,
+            "execucoes_totais": 1,
+            "execucoes_validas": 1,
+            "saidas_invalidas": 0,
+            "taxa_saida_invalida": 0.0,
+            "falhas_por_categoria": {
+              "infra_503": 0,
+              "infra_429": 0,
+              "timeout": 0,
+              "json_invalido": 0,
+              "outro": 0
+            },
+            "acerto_total_campos": 100.0,
+            "notas_completas": 100.0,
+            "notas_completas_acertos": 1,
+            "notas_completas_comparacoes": 1,
+            "por_campo": {
+              "numero_nota": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "cnpj_emitente": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "valor_total": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "data_emissao": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              }
+            }
+          },
+          {
+            "run": 3,
+            "execucoes_totais": 1,
+            "execucoes_validas": 1,
+            "saidas_invalidas": 0,
+            "taxa_saida_invalida": 0.0,
+            "falhas_por_categoria": {
+              "infra_503": 0,
+              "infra_429": 0,
+              "timeout": 0,
+              "json_invalido": 0,
+              "outro": 0
+            },
+            "acerto_total_campos": 100.0,
+            "notas_completas": 100.0,
+            "notas_completas_acertos": 1,
+            "notas_completas_comparacoes": 1,
+            "por_campo": {
+              "numero_nota": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "cnpj_emitente": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "valor_total": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "data_emissao": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              }
+            }
+          }
+        ]
+      },
+      "subtotal_impostos": {
+        "execucoes_totais": 3,
+        "execucoes_validas": 3,
+        "saidas_invalidas": 0,
+        "taxa_saida_invalida": 0.0,
+        "falhas_por_categoria": {
+          "infra_503": 0,
+          "infra_429": 0,
+          "timeout": 0,
+          "json_invalido": 0,
+          "outro": 0
+        },
+        "media_acerto_total_campos": 100.0,
+        "media_notas_completas": 100.0,
+        "media_por_campo": {
+          "numero_nota": 100.0,
+          "cnpj_emitente": 100.0,
+          "valor_total": 100.0,
+          "data_emissao": 100.0
+        },
+        "por_execucao": [
+          {
+            "run": 1,
+            "execucoes_totais": 1,
+            "execucoes_validas": 1,
+            "saidas_invalidas": 0,
+            "taxa_saida_invalida": 0.0,
+            "falhas_por_categoria": {
+              "infra_503": 0,
+              "infra_429": 0,
+              "timeout": 0,
+              "json_invalido": 0,
+              "outro": 0
+            },
+            "acerto_total_campos": 100.0,
+            "notas_completas": 100.0,
+            "notas_completas_acertos": 1,
+            "notas_completas_comparacoes": 1,
+            "por_campo": {
+              "numero_nota": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "cnpj_emitente": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "valor_total": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "data_emissao": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              }
+            }
+          },
+          {
+            "run": 2,
+            "execucoes_totais": 1,
+            "execucoes_validas": 1,
+            "saidas_invalidas": 0,
+            "taxa_saida_invalida": 0.0,
+            "falhas_por_categoria": {
+              "infra_503": 0,
+              "infra_429": 0,
+              "timeout": 0,
+              "json_invalido": 0,
+              "outro": 0
+            },
+            "acerto_total_campos": 100.0,
+            "notas_completas": 100.0,
+            "notas_completas_acertos": 1,
+            "notas_completas_comparacoes": 1,
+            "por_campo": {
+              "numero_nota": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "cnpj_emitente": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "valor_total": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "data_emissao": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              }
+            }
+          },
+          {
+            "run": 3,
+            "execucoes_totais": 1,
+            "execucoes_validas": 1,
+            "saidas_invalidas": 0,
+            "taxa_saida_invalida": 0.0,
+            "falhas_por_categoria": {
+              "infra_503": 0,
+              "infra_429": 0,
+              "timeout": 0,
+              "json_invalido": 0,
+              "outro": 0
+            },
+            "acerto_total_campos": 100.0,
+            "notas_completas": 100.0,
+            "notas_completas_acertos": 1,
+            "notas_completas_comparacoes": 1,
+            "por_campo": {
+              "numero_nota": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "cnpj_emitente": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "valor_total": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              },
+              "data_emissao": {
+                "acertos": 1,
+                "comparacoes": 1,
+                "percentual": 100.0
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "falhas_api": [],
+  "notas": [
+    {
+      "arquivo": "nf_001.pdf",
+      "tipo": "limpo",
+      "esperado": {
+        "numero_nota": "00000123",
+        "cnpj_emitente": "12.000.001/0001-15",
+        "valor_total": 1024.5,
+        "data_emissao": "2025-01-15",
+        "tipo": "limpo"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "00000123",
+            "cnpj_emitente": "12.000.001/0001-15",
+            "valor_total": 1024.5,
+            "data_emissao": "2025-01-15",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "00000123",
+              "extraido": "00000123",
+              "esperado_normalizado": "00000123",
+              "extraido_normalizado": "00000123",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.001/0001-15",
+              "extraido": "12.000.001/0001-15",
+              "esperado_normalizado": "12000001000115",
+              "extraido_normalizado": "12000001000115",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 1024.5,
+              "extraido": 1024.5,
+              "esperado_normalizado": 1024.5,
+              "extraido_normalizado": 1024.5,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-01-15",
+              "extraido": "2025-01-15",
+              "esperado_normalizado": "2025-01-15",
+              "extraido_normalizado": "2025-01-15",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 2,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "00000123",
+            "cnpj_emitente": "12.000.001/0001-15",
+            "valor_total": 1024.5,
+            "data_emissao": "2025-01-15",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "00000123",
+              "extraido": "00000123",
+              "esperado_normalizado": "00000123",
+              "extraido_normalizado": "00000123",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.001/0001-15",
+              "extraido": "12.000.001/0001-15",
+              "esperado_normalizado": "12000001000115",
+              "extraido_normalizado": "12000001000115",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 1024.5,
+              "extraido": 1024.5,
+              "esperado_normalizado": 1024.5,
+              "extraido_normalizado": 1024.5,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-01-15",
+              "extraido": "2025-01-15",
+              "esperado_normalizado": "2025-01-15",
+              "extraido_normalizado": "2025-01-15",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 3,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "00000123",
+            "cnpj_emitente": "12.000.001/0001-15",
+            "valor_total": 1024.5,
+            "data_emissao": "2025-01-15",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "00000123",
+              "extraido": "00000123",
+              "esperado_normalizado": "00000123",
+              "extraido_normalizado": "00000123",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.001/0001-15",
+              "extraido": "12.000.001/0001-15",
+              "esperado_normalizado": "12000001000115",
+              "extraido_normalizado": "12000001000115",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 1024.5,
+              "extraido": 1024.5,
+              "esperado_normalizado": 1024.5,
+              "extraido_normalizado": 1024.5,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-01-15",
+              "extraido": "2025-01-15",
+              "esperado_normalizado": "2025-01-15",
+              "extraido_normalizado": "2025-01-15",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_002.pdf",
+      "tipo": "limpo",
+      "esperado": {
+        "numero_nota": "123",
+        "cnpj_emitente": "12.000.002/0001-60",
+        "valor_total": 810.0,
+        "data_emissao": "2025-02-03",
+        "tipo": "limpo"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "123",
+            "cnpj_emitente": "12.000.002/0001-60",
+            "valor_total": 810.0,
+            "data_emissao": "2025-02-03",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "123",
+              "extraido": "123",
+              "esperado_normalizado": "123",
+              "extraido_normalizado": "123",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.002/0001-60",
+              "extraido": "12.000.002/0001-60",
+              "esperado_normalizado": "12000002000160",
+              "extraido_normalizado": "12000002000160",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 810.0,
+              "extraido": 810.0,
+              "esperado_normalizado": 810.0,
+              "extraido_normalizado": 810.0,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-02-03",
+              "extraido": "2025-02-03",
+              "esperado_normalizado": "2025-02-03",
+              "extraido_normalizado": "2025-02-03",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 2,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "123",
+            "cnpj_emitente": "12.000.002/0001-60",
+            "valor_total": 810.0,
+            "data_emissao": "2025-02-03",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "123",
+              "extraido": "123",
+              "esperado_normalizado": "123",
+              "extraido_normalizado": "123",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.002/0001-60",
+              "extraido": "12.000.002/0001-60",
+              "esperado_normalizado": "12000002000160",
+              "extraido_normalizado": "12000002000160",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 810.0,
+              "extraido": 810.0,
+              "esperado_normalizado": 810.0,
+              "extraido_normalizado": 810.0,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-02-03",
+              "extraido": "2025-02-03",
+              "esperado_normalizado": "2025-02-03",
+              "extraido_normalizado": "2025-02-03",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 3,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "123",
+            "cnpj_emitente": "12.000.002/0001-60",
+            "valor_total": 810.0,
+            "data_emissao": "2025-02-03",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "123",
+              "extraido": "123",
+              "esperado_normalizado": "123",
+              "extraido_normalizado": "123",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.002/0001-60",
+              "extraido": "12.000.002/0001-60",
+              "esperado_normalizado": "12000002000160",
+              "extraido_normalizado": "12000002000160",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 810.0,
+              "extraido": 810.0,
+              "esperado_normalizado": 810.0,
+              "extraido_normalizado": 810.0,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-02-03",
+              "extraido": "2025-02-03",
+              "esperado_normalizado": "2025-02-03",
+              "extraido_normalizado": "2025-02-03",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_003.pdf",
+      "tipo": "limpo",
+      "esperado": {
+        "numero_nota": "0000456",
+        "cnpj_emitente": "12.000.003/0001-04",
+        "valor_total": 256.75,
+        "data_emissao": "2025-03-09",
+        "tipo": "limpo"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "0000456",
+            "cnpj_emitente": "12.000.003/0001-04",
+            "valor_total": 256.75,
+            "data_emissao": "2025-03-09",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "0000456",
+              "extraido": "0000456",
+              "esperado_normalizado": "0000456",
+              "extraido_normalizado": "0000456",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.003/0001-04",
+              "extraido": "12.000.003/0001-04",
+              "esperado_normalizado": "12000003000104",
+              "extraido_normalizado": "12000003000104",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 256.75,
+              "extraido": 256.75,
+              "esperado_normalizado": 256.75,
+              "extraido_normalizado": 256.75,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-03-09",
+              "extraido": "2025-03-09",
+              "esperado_normalizado": "2025-03-09",
+              "extraido_normalizado": "2025-03-09",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 2,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "0000456",
+            "cnpj_emitente": "12.000.003/0001-04",
+            "valor_total": 256.75,
+            "data_emissao": "2025-03-09",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "0000456",
+              "extraido": "0000456",
+              "esperado_normalizado": "0000456",
+              "extraido_normalizado": "0000456",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.003/0001-04",
+              "extraido": "12.000.003/0001-04",
+              "esperado_normalizado": "12000003000104",
+              "extraido_normalizado": "12000003000104",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 256.75,
+              "extraido": 256.75,
+              "esperado_normalizado": 256.75,
+              "extraido_normalizado": 256.75,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-03-09",
+              "extraido": "2025-03-09",
+              "esperado_normalizado": "2025-03-09",
+              "extraido_normalizado": "2025-03-09",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 3,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "0000456",
+            "cnpj_emitente": "12.000.003/0001-04",
+            "valor_total": 256.75,
+            "data_emissao": "2025-03-09",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "0000456",
+              "extraido": "0000456",
+              "esperado_normalizado": "0000456",
+              "extraido_normalizado": "0000456",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.003/0001-04",
+              "extraido": "12.000.003/0001-04",
+              "esperado_normalizado": "12000003000104",
+              "extraido_normalizado": "12000003000104",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 256.75,
+              "extraido": 256.75,
+              "esperado_normalizado": 256.75,
+              "extraido_normalizado": 256.75,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-03-09",
+              "extraido": "2025-03-09",
+              "esperado_normalizado": "2025-03-09",
+              "extraido_normalizado": "2025-03-09",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_004.pdf",
+      "tipo": "limpo",
+      "esperado": {
+        "numero_nota": "78",
+        "cnpj_emitente": "12.000.004/0001-59",
+        "valor_total": 42.9,
+        "data_emissao": "2025-04-21",
+        "tipo": "limpo"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "78",
+            "cnpj_emitente": "12.000.004/0001-59",
+            "valor_total": 42.9,
+            "data_emissao": "2025-04-21",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "78",
+              "extraido": "78",
+              "esperado_normalizado": "78",
+              "extraido_normalizado": "78",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.004/0001-59",
+              "extraido": "12.000.004/0001-59",
+              "esperado_normalizado": "12000004000159",
+              "extraido_normalizado": "12000004000159",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 42.9,
+              "extraido": 42.9,
+              "esperado_normalizado": 42.9,
+              "extraido_normalizado": 42.9,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-04-21",
+              "extraido": "2025-04-21",
+              "esperado_normalizado": "2025-04-21",
+              "extraido_normalizado": "2025-04-21",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 2,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "78",
+            "cnpj_emitente": "12.000.004/0001-59",
+            "valor_total": 42.9,
+            "data_emissao": "2025-04-21",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "78",
+              "extraido": "78",
+              "esperado_normalizado": "78",
+              "extraido_normalizado": "78",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.004/0001-59",
+              "extraido": "12.000.004/0001-59",
+              "esperado_normalizado": "12000004000159",
+              "extraido_normalizado": "12000004000159",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 42.9,
+              "extraido": 42.9,
+              "esperado_normalizado": 42.9,
+              "extraido_normalizado": 42.9,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-04-21",
+              "extraido": "2025-04-21",
+              "esperado_normalizado": "2025-04-21",
+              "extraido_normalizado": "2025-04-21",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 3,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "78",
+            "cnpj_emitente": "12.000.004/0001-59",
+            "valor_total": 42.9,
+            "data_emissao": "2025-04-21",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "78",
+              "extraido": "78",
+              "esperado_normalizado": "78",
+              "extraido_normalizado": "78",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.004/0001-59",
+              "extraido": "12.000.004/0001-59",
+              "esperado_normalizado": "12000004000159",
+              "extraido_normalizado": "12000004000159",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 42.9,
+              "extraido": 42.9,
+              "esperado_normalizado": 42.9,
+              "extraido_normalizado": 42.9,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-04-21",
+              "extraido": "2025-04-21",
+              "esperado_normalizado": "2025-04-21",
+              "extraido_normalizado": "2025-04-21",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_005.pdf",
+      "tipo": "limpo",
+      "esperado": {
+        "numero_nota": "0009",
+        "cnpj_emitente": "12.000.005/0001-01",
+        "valor_total": 10999.99,
+        "data_emissao": "2025-05-14",
+        "tipo": "limpo"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "0009",
+            "cnpj_emitente": "12.000.005/0001-01",
+            "valor_total": 10999.99,
+            "data_emissao": "2025-05-14",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "0009",
+              "extraido": "0009",
+              "esperado_normalizado": "0009",
+              "extraido_normalizado": "0009",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.005/0001-01",
+              "extraido": "12.000.005/0001-01",
+              "esperado_normalizado": "12000005000101",
+              "extraido_normalizado": "12000005000101",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 10999.99,
+              "extraido": 10999.99,
+              "esperado_normalizado": 10999.99,
+              "extraido_normalizado": 10999.99,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-05-14",
+              "extraido": "2025-05-14",
+              "esperado_normalizado": "2025-05-14",
+              "extraido_normalizado": "2025-05-14",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 2,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "0009",
+            "cnpj_emitente": "12.000.005/0001-01",
+            "valor_total": 10999.99,
+            "data_emissao": "2025-05-14",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "0009",
+              "extraido": "0009",
+              "esperado_normalizado": "0009",
+              "extraido_normalizado": "0009",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.005/0001-01",
+              "extraido": "12.000.005/0001-01",
+              "esperado_normalizado": "12000005000101",
+              "extraido_normalizado": "12000005000101",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 10999.99,
+              "extraido": 10999.99,
+              "esperado_normalizado": 10999.99,
+              "extraido_normalizado": 10999.99,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-05-14",
+              "extraido": "2025-05-14",
+              "esperado_normalizado": "2025-05-14",
+              "extraido_normalizado": "2025-05-14",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 3,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "0009",
+            "cnpj_emitente": "12.000.005/0001-01",
+            "valor_total": 10999.99,
+            "data_emissao": "2025-05-14",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "0009",
+              "extraido": "0009",
+              "esperado_normalizado": "0009",
+              "extraido_normalizado": "0009",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.005/0001-01",
+              "extraido": "12.000.005/0001-01",
+              "esperado_normalizado": "12000005000101",
+              "extraido_normalizado": "12000005000101",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 10999.99,
+              "extraido": 10999.99,
+              "esperado_normalizado": 10999.99,
+              "extraido_normalizado": 10999.99,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-05-14",
+              "extraido": "2025-05-14",
+              "esperado_normalizado": "2025-05-14",
+              "extraido_normalizado": "2025-05-14",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_006.pdf",
+      "tipo": "limpo",
+      "esperado": {
+        "numero_nota": "1000001",
+        "cnpj_emitente": "12.000.006/0001-48",
+        "valor_total": 567.0,
+        "data_emissao": "2025-06-02",
+        "tipo": "limpo"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "1000001",
+            "cnpj_emitente": "12.000.006/0001-48",
+            "valor_total": 567.0,
+            "data_emissao": "2025-06-02",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "1000001",
+              "extraido": "1000001",
+              "esperado_normalizado": "1000001",
+              "extraido_normalizado": "1000001",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.006/0001-48",
+              "extraido": "12.000.006/0001-48",
+              "esperado_normalizado": "12000006000148",
+              "extraido_normalizado": "12000006000148",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 567.0,
+              "extraido": 567.0,
+              "esperado_normalizado": 567.0,
+              "extraido_normalizado": 567.0,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-06-02",
+              "extraido": "2025-06-02",
+              "esperado_normalizado": "2025-06-02",
+              "extraido_normalizado": "2025-06-02",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 2,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "1000001",
+            "cnpj_emitente": "12.000.006/0001-48",
+            "valor_total": 567.0,
+            "data_emissao": "2025-06-02",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "1000001",
+              "extraido": "1000001",
+              "esperado_normalizado": "1000001",
+              "extraido_normalizado": "1000001",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.006/0001-48",
+              "extraido": "12.000.006/0001-48",
+              "esperado_normalizado": "12000006000148",
+              "extraido_normalizado": "12000006000148",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 567.0,
+              "extraido": 567.0,
+              "esperado_normalizado": 567.0,
+              "extraido_normalizado": 567.0,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-06-02",
+              "extraido": "2025-06-02",
+              "esperado_normalizado": "2025-06-02",
+              "extraido_normalizado": "2025-06-02",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 3,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "1000001",
+            "cnpj_emitente": "12.000.006/0001-48",
+            "valor_total": 567.0,
+            "data_emissao": "2025-06-02",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "1000001",
+              "extraido": "1000001",
+              "esperado_normalizado": "1000001",
+              "extraido_normalizado": "1000001",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.006/0001-48",
+              "extraido": "12.000.006/0001-48",
+              "esperado_normalizado": "12000006000148",
+              "extraido_normalizado": "12000006000148",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 567.0,
+              "extraido": 567.0,
+              "esperado_normalizado": 567.0,
+              "extraido_normalizado": 567.0,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-06-02",
+              "extraido": "2025-06-02",
+              "esperado_normalizado": "2025-06-02",
+              "extraido_normalizado": "2025-06-02",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_007.pdf",
+      "tipo": "limpo",
+      "esperado": {
+        "numero_nota": "001234",
+        "cnpj_emitente": "12.000.007/0001-92",
+        "valor_total": 3210.08,
+        "data_emissao": "2025-07-19",
+        "tipo": "limpo"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "001234",
+            "cnpj_emitente": "12.000.007/0001-92",
+            "valor_total": 3210.08,
+            "data_emissao": "2025-07-19",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "001234",
+              "extraido": "001234",
+              "esperado_normalizado": "001234",
+              "extraido_normalizado": "001234",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.007/0001-92",
+              "extraido": "12.000.007/0001-92",
+              "esperado_normalizado": "12000007000192",
+              "extraido_normalizado": "12000007000192",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 3210.08,
+              "extraido": 3210.08,
+              "esperado_normalizado": 3210.08,
+              "extraido_normalizado": 3210.08,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-07-19",
+              "extraido": "2025-07-19",
+              "esperado_normalizado": "2025-07-19",
+              "extraido_normalizado": "2025-07-19",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 2,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "001234",
+            "cnpj_emitente": "12.000.007/0001-92",
+            "valor_total": 3210.08,
+            "data_emissao": "2025-07-19",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "001234",
+              "extraido": "001234",
+              "esperado_normalizado": "001234",
+              "extraido_normalizado": "001234",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.007/0001-92",
+              "extraido": "12.000.007/0001-92",
+              "esperado_normalizado": "12000007000192",
+              "extraido_normalizado": "12000007000192",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 3210.08,
+              "extraido": 3210.08,
+              "esperado_normalizado": 3210.08,
+              "extraido_normalizado": 3210.08,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-07-19",
+              "extraido": "2025-07-19",
+              "esperado_normalizado": "2025-07-19",
+              "extraido_normalizado": "2025-07-19",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 3,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "001234",
+            "cnpj_emitente": "12.000.007/0001-92",
+            "valor_total": 3210.08,
+            "data_emissao": "2025-07-19",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "001234",
+              "extraido": "001234",
+              "esperado_normalizado": "001234",
+              "extraido_normalizado": "001234",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.007/0001-92",
+              "extraido": "12.000.007/0001-92",
+              "esperado_normalizado": "12000007000192",
+              "extraido_normalizado": "12000007000192",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 3210.08,
+              "extraido": 3210.08,
+              "esperado_normalizado": 3210.08,
+              "extraido_normalizado": 3210.08,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-07-19",
+              "extraido": "2025-07-19",
+              "esperado_normalizado": "2025-07-19",
+              "extraido_normalizado": "2025-07-19",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_008.pdf",
+      "tipo": "limpo",
+      "esperado": {
+        "numero_nota": "88",
+        "cnpj_emitente": "12.000.008/0001-37",
+        "valor_total": 75.3,
+        "data_emissao": "2025-08-05",
+        "tipo": "limpo"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "88",
+            "cnpj_emitente": "12.000.008/0001-37",
+            "valor_total": 75.3,
+            "data_emissao": "2025-08-05",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "88",
+              "extraido": "88",
+              "esperado_normalizado": "88",
+              "extraido_normalizado": "88",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.008/0001-37",
+              "extraido": "12.000.008/0001-37",
+              "esperado_normalizado": "12000008000137",
+              "extraido_normalizado": "12000008000137",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 75.3,
+              "extraido": 75.3,
+              "esperado_normalizado": 75.3,
+              "extraido_normalizado": 75.3,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-08-05",
+              "extraido": "2025-08-05",
+              "esperado_normalizado": "2025-08-05",
+              "extraido_normalizado": "2025-08-05",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 2,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "88",
+            "cnpj_emitente": "12.000.008/0001-37",
+            "valor_total": 75.3,
+            "data_emissao": "2025-08-05",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "88",
+              "extraido": "88",
+              "esperado_normalizado": "88",
+              "extraido_normalizado": "88",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.008/0001-37",
+              "extraido": "12.000.008/0001-37",
+              "esperado_normalizado": "12000008000137",
+              "extraido_normalizado": "12000008000137",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 75.3,
+              "extraido": 75.3,
+              "esperado_normalizado": 75.3,
+              "extraido_normalizado": 75.3,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-08-05",
+              "extraido": "2025-08-05",
+              "esperado_normalizado": "2025-08-05",
+              "extraido_normalizado": "2025-08-05",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 3,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "88",
+            "cnpj_emitente": "12.000.008/0001-37",
+            "valor_total": 75.3,
+            "data_emissao": "2025-08-05",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "88",
+              "extraido": "88",
+              "esperado_normalizado": "88",
+              "extraido_normalizado": "88",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.008/0001-37",
+              "extraido": "12.000.008/0001-37",
+              "esperado_normalizado": "12000008000137",
+              "extraido_normalizado": "12000008000137",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 75.3,
+              "extraido": 75.3,
+              "esperado_normalizado": 75.3,
+              "extraido_normalizado": 75.3,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-08-05",
+              "extraido": "2025-08-05",
+              "esperado_normalizado": "2025-08-05",
+              "extraido_normalizado": "2025-08-05",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_009.pdf",
+      "tipo": "limpo",
+      "esperado": {
+        "numero_nota": "0000007",
+        "cnpj_emitente": "12.000.009/0001-81",
+        "valor_total": 980.0,
+        "data_emissao": "2025-09-11",
+        "tipo": "limpo"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "0000007",
+            "cnpj_emitente": "12.000.009/0001-81",
+            "valor_total": 980.0,
+            "data_emissao": "2025-09-11",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "0000007",
+              "extraido": "0000007",
+              "esperado_normalizado": "0000007",
+              "extraido_normalizado": "0000007",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.009/0001-81",
+              "extraido": "12.000.009/0001-81",
+              "esperado_normalizado": "12000009000181",
+              "extraido_normalizado": "12000009000181",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 980.0,
+              "extraido": 980.0,
+              "esperado_normalizado": 980.0,
+              "extraido_normalizado": 980.0,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-09-11",
+              "extraido": "2025-09-11",
+              "esperado_normalizado": "2025-09-11",
+              "extraido_normalizado": "2025-09-11",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 2,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "0000007",
+            "cnpj_emitente": "12.000.009/0001-81",
+            "valor_total": 980.0,
+            "data_emissao": "2025-09-11",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "0000007",
+              "extraido": "0000007",
+              "esperado_normalizado": "0000007",
+              "extraido_normalizado": "0000007",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.009/0001-81",
+              "extraido": "12.000.009/0001-81",
+              "esperado_normalizado": "12000009000181",
+              "extraido_normalizado": "12000009000181",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 980.0,
+              "extraido": 980.0,
+              "esperado_normalizado": 980.0,
+              "extraido_normalizado": 980.0,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-09-11",
+              "extraido": "2025-09-11",
+              "esperado_normalizado": "2025-09-11",
+              "extraido_normalizado": "2025-09-11",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 3,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "0000007",
+            "cnpj_emitente": "12.000.009/0001-81",
+            "valor_total": 980.0,
+            "data_emissao": "2025-09-11",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "0000007",
+              "extraido": "0000007",
+              "esperado_normalizado": "0000007",
+              "extraido_normalizado": "0000007",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.009/0001-81",
+              "extraido": "12.000.009/0001-81",
+              "esperado_normalizado": "12000009000181",
+              "extraido_normalizado": "12000009000181",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 980.0,
+              "extraido": 980.0,
+              "esperado_normalizado": 980.0,
+              "extraido_normalizado": 980.0,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-09-11",
+              "extraido": "2025-09-11",
+              "esperado_normalizado": "2025-09-11",
+              "extraido_normalizado": "2025-09-11",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_010.pdf",
+      "tipo": "limpo",
+      "esperado": {
+        "numero_nota": "20260015",
+        "cnpj_emitente": "12.000.010/0001-06",
+        "valor_total": 1400.45,
+        "data_emissao": "2025-10-27",
+        "tipo": "limpo"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "20260015",
+            "cnpj_emitente": "12.000.010/0001-06",
+            "valor_total": 1400.45,
+            "data_emissao": "2025-10-27",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "20260015",
+              "extraido": "20260015",
+              "esperado_normalizado": "20260015",
+              "extraido_normalizado": "20260015",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.010/0001-06",
+              "extraido": "12.000.010/0001-06",
+              "esperado_normalizado": "12000010000106",
+              "extraido_normalizado": "12000010000106",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 1400.45,
+              "extraido": 1400.45,
+              "esperado_normalizado": 1400.45,
+              "extraido_normalizado": 1400.45,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-10-27",
+              "extraido": "2025-10-27",
+              "esperado_normalizado": "2025-10-27",
+              "extraido_normalizado": "2025-10-27",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 2,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "20260015",
+            "cnpj_emitente": "12.000.010/0001-06",
+            "valor_total": 1400.45,
+            "data_emissao": "2025-10-27",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "20260015",
+              "extraido": "20260015",
+              "esperado_normalizado": "20260015",
+              "extraido_normalizado": "20260015",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.010/0001-06",
+              "extraido": "12.000.010/0001-06",
+              "esperado_normalizado": "12000010000106",
+              "extraido_normalizado": "12000010000106",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 1400.45,
+              "extraido": 1400.45,
+              "esperado_normalizado": 1400.45,
+              "extraido_normalizado": 1400.45,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-10-27",
+              "extraido": "2025-10-27",
+              "esperado_normalizado": "2025-10-27",
+              "extraido_normalizado": "2025-10-27",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 3,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "20260015",
+            "cnpj_emitente": "12.000.010/0001-06",
+            "valor_total": 1400.45,
+            "data_emissao": "2025-10-27",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "20260015",
+              "extraido": "20260015",
+              "esperado_normalizado": "20260015",
+              "extraido_normalizado": "20260015",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.010/0001-06",
+              "extraido": "12.000.010/0001-06",
+              "esperado_normalizado": "12000010000106",
+              "extraido_normalizado": "12000010000106",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 1400.45,
+              "extraido": 1400.45,
+              "esperado_normalizado": 1400.45,
+              "extraido_normalizado": 1400.45,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-10-27",
+              "extraido": "2025-10-27",
+              "esperado_normalizado": "2025-10-27",
+              "extraido_normalizado": "2025-10-27",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_011.pdf",
+      "tipo": "scan_ruido",
+      "esperado": {
+        "numero_nota": "00077",
+        "cnpj_emitente": "12.000.011/0001-50",
+        "valor_total": 1250.9,
+        "data_emissao": "2025-11-04",
+        "tipo": "scan_ruido"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "00077",
+            "cnpj_emitente": "12.000.011/0001-50",
+            "valor_total": 1250.9,
+            "data_emissao": "2025-11-04",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "00077",
+              "extraido": "00077",
+              "esperado_normalizado": "00077",
+              "extraido_normalizado": "00077",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.011/0001-50",
+              "extraido": "12.000.011/0001-50",
+              "esperado_normalizado": "12000011000150",
+              "extraido_normalizado": "12000011000150",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 1250.9,
+              "extraido": 1250.9,
+              "esperado_normalizado": 1250.9,
+              "extraido_normalizado": 1250.9,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-11-04",
+              "extraido": "2025-11-04",
+              "esperado_normalizado": "2025-11-04",
+              "extraido_normalizado": "2025-11-04",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 2,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "00077",
+            "cnpj_emitente": "12.000.011/0001-50",
+            "valor_total": 1250.9,
+            "data_emissao": "2025-11-04",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "00077",
+              "extraido": "00077",
+              "esperado_normalizado": "00077",
+              "extraido_normalizado": "00077",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.011/0001-50",
+              "extraido": "12.000.011/0001-50",
+              "esperado_normalizado": "12000011000150",
+              "extraido_normalizado": "12000011000150",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 1250.9,
+              "extraido": 1250.9,
+              "esperado_normalizado": 1250.9,
+              "extraido_normalizado": 1250.9,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-11-04",
+              "extraido": "2025-11-04",
+              "esperado_normalizado": "2025-11-04",
+              "extraido_normalizado": "2025-11-04",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 3,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "00077",
+            "cnpj_emitente": "12.000.011/0001-50",
+            "valor_total": 1250.9,
+            "data_emissao": "2025-11-04",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "00077",
+              "extraido": "00077",
+              "esperado_normalizado": "00077",
+              "extraido_normalizado": "00077",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.011/0001-50",
+              "extraido": "12.000.011/0001-50",
+              "esperado_normalizado": "12000011000150",
+              "extraido_normalizado": "12000011000150",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 1250.9,
+              "extraido": 1250.9,
+              "esperado_normalizado": 1250.9,
+              "extraido_normalizado": 1250.9,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-11-04",
+              "extraido": "2025-11-04",
+              "esperado_normalizado": "2025-11-04",
+              "extraido_normalizado": "2025-11-04",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_012.pdf",
+      "tipo": "inclinada",
+      "esperado": {
+        "numero_nota": "012345",
+        "cnpj_emitente": "12.000.012/0001-03",
+        "valor_total": 999.99,
+        "data_emissao": "2025-11-12",
+        "tipo": "inclinada"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "012345",
+            "cnpj_emitente": "12.000.012/0001-03",
+            "valor_total": 999.99,
+            "data_emissao": "2025-11-12",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "012345",
+              "extraido": "012345",
+              "esperado_normalizado": "012345",
+              "extraido_normalizado": "012345",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.012/0001-03",
+              "extraido": "12.000.012/0001-03",
+              "esperado_normalizado": "12000012000103",
+              "extraido_normalizado": "12000012000103",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 999.99,
+              "extraido": 999.99,
+              "esperado_normalizado": 999.99,
+              "extraido_normalizado": 999.99,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-11-12",
+              "extraido": "2025-11-12",
+              "esperado_normalizado": "2025-11-12",
+              "extraido_normalizado": "2025-11-12",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 2,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "012345",
+            "cnpj_emitente": "12.000.012/0001-03",
+            "valor_total": 999.99,
+            "data_emissao": "2025-11-12",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "012345",
+              "extraido": "012345",
+              "esperado_normalizado": "012345",
+              "extraido_normalizado": "012345",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.012/0001-03",
+              "extraido": "12.000.012/0001-03",
+              "esperado_normalizado": "12000012000103",
+              "extraido_normalizado": "12000012000103",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 999.99,
+              "extraido": 999.99,
+              "esperado_normalizado": 999.99,
+              "extraido_normalizado": 999.99,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-11-12",
+              "extraido": "2025-11-12",
+              "esperado_normalizado": "2025-11-12",
+              "extraido_normalizado": "2025-11-12",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 3,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "012345",
+            "cnpj_emitente": "12.000.012/0001-03",
+            "valor_total": 999.99,
+            "data_emissao": "2025-11-12",
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "012345",
+              "extraido": "012345",
+              "esperado_normalizado": "012345",
+              "extraido_normalizado": "012345",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.012/0001-03",
+              "extraido": "12.000.012/0001-03",
+              "esperado_normalizado": "12000012000103",
+              "extraido_normalizado": "12000012000103",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 999.99,
+              "extraido": 999.99,
+              "esperado_normalizado": 999.99,
+              "extraido_normalizado": 999.99,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-11-12",
+              "extraido": "2025-11-12",
+              "esperado_normalizado": "2025-11-12",
+              "extraido_normalizado": "2025-11-12",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_013.pdf",
+      "tipo": "sem_data",
+      "esperado": {
+        "numero_nota": "000013",
+        "cnpj_emitente": "12.000.013/0001-40",
+        "valor_total": 654.32,
+        "data_emissao": null,
+        "tipo": "sem_data"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "000013",
+            "cnpj_emitente": "12.000.013/0001-40",
+            "valor_total": 654.32,
+            "data_emissao": null,
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "000013",
+              "extraido": "000013",
+              "esperado_normalizado": "000013",
+              "extraido_normalizado": "000013",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.013/0001-40",
+              "extraido": "12.000.013/0001-40",
+              "esperado_normalizado": "12000013000140",
+              "extraido_normalizado": "12000013000140",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 654.32,
+              "extraido": 654.32,
+              "esperado_normalizado": 654.32,
+              "extraido_normalizado": 654.32,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": null,
+              "extraido": null,
+              "esperado_normalizado": null,
+              "extraido_normalizado": null,
+              "acertou": null,
+              "resultado": "ignorado"
+            }
+          }
+        },
+        {
+          "run": 2,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "000013",
+            "cnpj_emitente": "12.000.013/0001-40",
+            "valor_total": 654.32,
+            "data_emissao": null,
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "000013",
+              "extraido": "000013",
+              "esperado_normalizado": "000013",
+              "extraido_normalizado": "000013",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.013/0001-40",
+              "extraido": "12.000.013/0001-40",
+              "esperado_normalizado": "12000013000140",
+              "extraido_normalizado": "12000013000140",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 654.32,
+              "extraido": 654.32,
+              "esperado_normalizado": 654.32,
+              "extraido_normalizado": 654.32,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": null,
+              "extraido": null,
+              "esperado_normalizado": null,
+              "extraido_normalizado": null,
+              "acertou": null,
+              "resultado": "ignorado"
+            }
+          }
+        },
+        {
+          "run": 3,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "000013",
+            "cnpj_emitente": "12.000.013/0001-40",
+            "valor_total": 654.32,
+            "data_emissao": null,
+            "descricao_itens": "SERVICOS PRESTADOS"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "000013",
+              "extraido": "000013",
+              "esperado_normalizado": "000013",
+              "extraido_normalizado": "000013",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.013/0001-40",
+              "extraido": "12.000.013/0001-40",
+              "esperado_normalizado": "12000013000140",
+              "extraido_normalizado": "12000013000140",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 654.32,
+              "extraido": 654.32,
+              "esperado_normalizado": 654.32,
+              "extraido_normalizado": 654.32,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": null,
+              "extraido": null,
+              "esperado_normalizado": null,
+              "extraido_normalizado": null,
+              "acertou": null,
+              "resultado": "ignorado"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_014.pdf",
+      "tipo": "comprovante",
+      "esperado": {
+        "numero_nota": "14",
+        "cnpj_emitente": "12.000.014/0001-94",
+        "valor_total": 2875.0,
+        "data_emissao": "2025-12-03",
+        "tipo": "comprovante"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "14",
+            "cnpj_emitente": "12.000.014/0001-94",
+            "valor_total": 2875.0,
+            "data_emissao": "2025-12-03",
+            "descricao_itens": "SERVICO DE TRANSPORTE REGIONAL"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "14",
+              "extraido": "14",
+              "esperado_normalizado": "14",
+              "extraido_normalizado": "14",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.014/0001-94",
+              "extraido": "12.000.014/0001-94",
+              "esperado_normalizado": "12000014000194",
+              "extraido_normalizado": "12000014000194",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 2875.0,
+              "extraido": 2875.0,
+              "esperado_normalizado": 2875.0,
+              "extraido_normalizado": 2875.0,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-12-03",
+              "extraido": "2025-12-03",
+              "esperado_normalizado": "2025-12-03",
+              "extraido_normalizado": "2025-12-03",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 2,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "14",
+            "cnpj_emitente": "12.000.014/0001-94",
+            "valor_total": 2875.0,
+            "data_emissao": "2025-12-03",
+            "descricao_itens": "SERVICO DE TRANSPORTE REGIONAL"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "14",
+              "extraido": "14",
+              "esperado_normalizado": "14",
+              "extraido_normalizado": "14",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.014/0001-94",
+              "extraido": "12.000.014/0001-94",
+              "esperado_normalizado": "12000014000194",
+              "extraido_normalizado": "12000014000194",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 2875.0,
+              "extraido": 2875.0,
+              "esperado_normalizado": 2875.0,
+              "extraido_normalizado": 2875.0,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-12-03",
+              "extraido": "2025-12-03",
+              "esperado_normalizado": "2025-12-03",
+              "extraido_normalizado": "2025-12-03",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 3,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "14",
+            "cnpj_emitente": "12.000.014/0001-94",
+            "valor_total": 2875.0,
+            "data_emissao": "2025-12-03",
+            "descricao_itens": "SERVICO DE TRANSPORTE REGIONAL"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "14",
+              "extraido": "14",
+              "esperado_normalizado": "14",
+              "extraido_normalizado": "14",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.014/0001-94",
+              "extraido": "12.000.014/0001-94",
+              "esperado_normalizado": "12000014000194",
+              "extraido_normalizado": "12000014000194",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 2875.0,
+              "extraido": 2875.0,
+              "esperado_normalizado": 2875.0,
+              "extraido_normalizado": 2875.0,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-12-03",
+              "extraido": "2025-12-03",
+              "esperado_normalizado": "2025-12-03",
+              "extraido_normalizado": "2025-12-03",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "arquivo": "nf_015.pdf",
+      "tipo": "subtotal_impostos",
+      "esperado": {
+        "numero_nota": "000900",
+        "cnpj_emitente": "12.000.015/0001-39",
+        "valor_total": 1180.45,
+        "data_emissao": "2025-12-18",
+        "tipo": "subtotal_impostos"
+      },
+      "execucoes": [
+        {
+          "run": 1,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "000900",
+            "cnpj_emitente": "12.000.015/0001-39",
+            "valor_total": 1180.45,
+            "data_emissao": "2025-12-18",
+            "descricao_itens": "Servicos"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "000900",
+              "extraido": "000900",
+              "esperado_normalizado": "000900",
+              "extraido_normalizado": "000900",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.015/0001-39",
+              "extraido": "12.000.015/0001-39",
+              "esperado_normalizado": "12000015000139",
+              "extraido_normalizado": "12000015000139",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 1180.45,
+              "extraido": 1180.45,
+              "esperado_normalizado": 1180.45,
+              "extraido_normalizado": 1180.45,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-12-18",
+              "extraido": "2025-12-18",
+              "esperado_normalizado": "2025-12-18",
+              "extraido_normalizado": "2025-12-18",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 2,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "000900",
+            "cnpj_emitente": "12.000.015/0001-39",
+            "valor_total": 1180.45,
+            "data_emissao": "2025-12-18",
+            "descricao_itens": "Serviços prestados por Delta Oficina Tecnica Ltda"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "000900",
+              "extraido": "000900",
+              "esperado_normalizado": "000900",
+              "extraido_normalizado": "000900",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.015/0001-39",
+              "extraido": "12.000.015/0001-39",
+              "esperado_normalizado": "12000015000139",
+              "extraido_normalizado": "12000015000139",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 1180.45,
+              "extraido": 1180.45,
+              "esperado_normalizado": 1180.45,
+              "extraido_normalizado": 1180.45,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-12-18",
+              "extraido": "2025-12-18",
+              "esperado_normalizado": "2025-12-18",
+              "extraido_normalizado": "2025-12-18",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        },
+        {
+          "run": 3,
+          "tentativas": 1,
+          "origem": "nova",
+          "extraido": {
+            "numero_nota": "000900",
+            "cnpj_emitente": "12.000.015/0001-39",
+            "valor_total": 1180.45,
+            "data_emissao": "2025-12-18",
+            "descricao_itens": "Serviços prestados por Delta Oficina Tecnica Ltda"
+          },
+          "campos": {
+            "numero_nota": {
+              "esperado": "000900",
+              "extraido": "000900",
+              "esperado_normalizado": "000900",
+              "extraido_normalizado": "000900",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "cnpj_emitente": {
+              "esperado": "12.000.015/0001-39",
+              "extraido": "12.000.015/0001-39",
+              "esperado_normalizado": "12000015000139",
+              "extraido_normalizado": "12000015000139",
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "valor_total": {
+              "esperado": 1180.45,
+              "extraido": 1180.45,
+              "esperado_normalizado": 1180.45,
+              "extraido_normalizado": 1180.45,
+              "acertou": true,
+              "resultado": "acertou"
+            },
+            "data_emissao": {
+              "esperado": "2025-12-18",
+              "extraido": "2025-12-18",
+              "esperado_normalizado": "2025-12-18",
+              "extraido_normalizado": "2025-12-18",
+              "acertou": true,
+              "resultado": "acertou"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
