@@ -283,6 +283,10 @@ Os testes automatizados não chamam o Gemini real, portanto não consomem cota n
 | **NÃO PROVADO** | Rejeições `400`/`413`/`415` passando pelo n8n real; foram testadas apenas diretamente no endpoint, com mocks. |
 | **NÃO PROVADO** | Notas `TESTE-F4-ELET-001` (Elétrica) e `TESTE-F4-FUND-001` (Fundação) pelo n8n real após a validação de entrada; só a Hidráulica foi reenviada. |
 
+## Avaliação da extração
+
+A extração do Gemini foi medida em 15 notas sintéticas, com 3 execuções cada. O resultado, o método e as limitações (notas fictícias, amostra pequena, um só modelo) estão em [`eval/README.md`](eval/README.md).
+
 ## CI/CD com GitHub Actions
 
 O workflow em `.github/workflows/ci.yml` roda automaticamente em todo `push` e `pull request` direcionado à branch `main`. Ele possui dois jobs independentes:
@@ -303,7 +307,7 @@ O arquivo `.env` contém `GEMINI_API_KEY` e `API_AUTH_TOKEN` e é ignorado pelo 
 
 ## Limitações conhecidas e próximos passos
 
-- `gemini-flash-latest` é um alias que pode mudar de comportamento sem aviso; para uma avaliação reproduzível, fixar um modelo específico via `GEMINI_MODEL`.
+- `gemini-flash-latest` é um alias que pode mudar de comportamento sem aviso; para uma avaliação reproduzível, fixar um modelo específico via `GEMINI_MODEL`. O eval em `eval/` foi rodado com `gemini-3.5-flash-lite`; a produção usa o que estiver em `GEMINI_MODEL` (padrão `gemini-flash-latest`).
 - A cota gratuita do Gemini limita o volume de testes reais e de avaliação em lote.
 - O projeto usa o SDK `google-generativeai`; avaliar a migração para o SDK atual do Google.
 - A chamada ao Gemini tem prazo total de 50 s, menor que os 60 s do n8n; retries e esperas consomem desse mesmo prazo.
